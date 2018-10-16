@@ -66,11 +66,13 @@ static void ready_cb(ElaCarrier *w, void *context)
 static
 void friend_added_cb(ElaCarrier *w, const ElaFriendInfo *info, void *context)
 {
+    vlogD("Friend %s added.", info->user_info.userid);
     wakeup(context);
 }
 
 static void friend_removed_cb(ElaCarrier *w, const char *friendid, void *context)
 {
+    vlogD("Friend %s removed.", friendid);
     wakeup(context);
 }
 
@@ -162,7 +164,7 @@ static StreamContextExtra stream_extra = {
 static void stream_on_data(ElaSession *ws, int stream, const void *data,
                            size_t len, void *context)
 {
-    vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
+    // vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
 }
 
 static void stream_state_changed(ElaSession *ws, int stream,
@@ -263,7 +265,7 @@ static void *bulk_write_routine(void *arg)
         } while (sent < total);
 
         if (i % 1000 == 0)
-            vlogD(".");
+            printf(".");
     }
     gettimeofday(&end, NULL);
 

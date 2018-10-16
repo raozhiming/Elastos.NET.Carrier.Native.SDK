@@ -1142,8 +1142,8 @@ ssize_t ela_stream_write(ElaSession *ws, int stream,
     sent = s->pipeline.write(&s->pipeline, buf);
     if (sent < 0)
         ela_set_error((int)sent);
-    else
-        vlogD("Session: Stream %d sent %d bytes data.", s->id, (int)len);
+    // else
+    //     vlogD("Session: Stream %d sent %d bytes data.", s->id, (int)len);
 
     deref(s);
     return sent < 0 ? -1: sent;

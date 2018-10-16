@@ -1342,12 +1342,15 @@ void notify_friend_connection_cb(uint32_t friend_number, bool connected,
 
     status = connected ? ElaConnectionStatus_Connected :
                          ElaConnectionStatus_Disconnected;
-
+    vlogI("notify_friend_connection_cb status:%d fi->info.status = %d", status, fi->info.status);
     if (status != fi->info.status) {
         fi->info.status = status;
         strcpy(tmpid, fi->info.user_info.userid);
 
         notify_friend_connection(w, tmpid, status);
+    }
+    else {
+        vlogE("notify_friend_connection_cb do not notify-----");
     }
 
     deref(fi);

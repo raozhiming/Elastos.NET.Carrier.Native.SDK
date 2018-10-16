@@ -71,8 +71,8 @@ static void ready_cb(ElaCarrier *w, void *context)
 static
 void friend_added_cb(ElaCarrier *w, const ElaFriendInfo *info, void *context)
 {
-    wakeup(context);
     vlogD("Friend %s added.", info->user_info.userid);
+    wakeup(context);
 }
 
 static void friend_removed_cb(ElaCarrier *w, const char *friendid, void *context)

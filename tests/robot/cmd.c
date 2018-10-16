@@ -153,7 +153,7 @@ static SessionContext session_context = {
 static void stream_on_data(ElaSession *ws, int stream, const void *data,
                            size_t len, void *context)
 {
-    vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
+    // vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
 }
 
 static void stream_state_changed(ElaSession *ws, int stream,
@@ -225,8 +225,8 @@ static void channel_close(ElaSession *ws, int stream, int channel,
 static  bool channel_data(ElaSession *ws, int stream, int channel,
                           const void *data, size_t len, void *context)
 {
-    vlogD("stream [%d] channel [%d] received data [%.*s]",
-          stream, channel, (int)len, (char*)data);
+    // vlogD("stream [%d] channel [%d] received data [%.*s]",
+    //       stream, channel, (int)len, (char*)data);
     return true;
 }
 
@@ -1018,8 +1018,10 @@ read_cmd:
         cmd = get_cmd_from_buffer();
         if (!cmd)
             goto read_cmd;
-        else
+        else {
+            vlogE("cmd. %s", cmd);
             return cmd;
+        }
     }
 }
 

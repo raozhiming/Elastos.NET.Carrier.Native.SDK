@@ -64,11 +64,13 @@ static void ready_cb(ElaCarrier *w, void *context)
 static
 void friend_added_cb(ElaCarrier *w, const ElaFriendInfo *info, void *context)
 {
+    vlogD("Friend %s added.", info->user_info.userid);
     wakeup(context);
 }
 
 static void friend_removed_cb(ElaCarrier *w, const char *friendid, void *context)
 {
+    vlogD("Friend %s removed.", friendid);
     wakeup(context);
 }
 
@@ -149,7 +151,7 @@ static SessionContext session_context = {
 static void stream_on_data(ElaSession *ws, int stream, const void *data,
                            size_t len, void *context)
 {
-    vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
+    // vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
 }
 
 static void stream_state_changed(ElaSession *ws, int stream,
@@ -364,7 +366,7 @@ static void *client_thread_entry(void *argv)
             pos += rc;
         }
 
-        vlogD(".");
+        printf(".");
     }
 
     vlogI("finished sending %d Kbytes data", ctxt->sent_count);
@@ -416,7 +418,7 @@ static void *server_thread_entry(void *argv)
         rc = (int)recv(data_sockfd, data, sizeof(data) - 1, 0);
         if (rc > 0) {
             ctxt->recv_count += rc;
-            vlogD("%s", data);
+            // vlogD("%s", data);
         }
 
     } while (rc > 0);

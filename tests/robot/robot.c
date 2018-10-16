@@ -81,7 +81,7 @@ static void ready_cb(ElaCarrier *w, void *context)
     ela_get_userid(w, robotid, sizeof(robotid));
     ela_get_address(w, address, sizeof(address));
 
-    vlogI("Robot is ready");
+    vlogI("Robot is ready: userid: %s\n\t\t\taddress:%s", robotid, address);
     write_ack("ready %s %s\n", robotid, address);
 }
 
@@ -158,6 +158,7 @@ static void friend_request_cb(ElaCarrier *w, const char *userid,
 
     vlogD("Received friend request from user %s", userid);
     print_user_info(info);
+    printf("hello:%s\n", hello);
     vlogD("  hello: %s", hello);
 
     if (strcmp(hello, "auto-reply") == 0) {

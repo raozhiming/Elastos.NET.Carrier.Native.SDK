@@ -132,7 +132,7 @@ static void carrier_friend_connection_cb(ElaCarrier *w, const char *friendid,
                                 ElaConnectionStatus status, void *context)
 {
     ElaCallbacks *cbs = ((CarrierContext *)context)->cbs;
-
+    vlogI("carrier_friend_connection_cb.");
     if (cbs && cbs->friend_connection)
         cbs->friend_connection(w, friendid, status, context);
 }
@@ -141,7 +141,7 @@ static void carrier_friend_presence_cb(ElaCarrier *w, const char *friendid,
                                 ElaPresenceStatus presence, void *context)
 {
     ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
-
+    vlogI("carrier_friend_presence_cb.");
     if (cbs && cbs->friend_presence)
         cbs->friend_presence(w, friendid, presence, context);
 }
@@ -151,7 +151,7 @@ static void carrier_friend_request_cb(ElaCarrier *w, const char *userid,
                                       const char *hello, void *context)
 {
     ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
-
+    vlogI("carrier_friend_request_cb.");
     if (cbs && cbs->friend_request)
         cbs->friend_request(w, userid, info, hello, context);
 }
@@ -160,7 +160,7 @@ static void carrier_friend_added_cb(ElaCarrier *w, const ElaFriendInfo *info,
                                     void *context)
 {
     ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
-
+    vlogI("carrier_friend_added_cb.");
     if (cbs && cbs->friend_added)
         cbs->friend_added(w, info, context);
 }
@@ -169,7 +169,7 @@ static void carrier_friend_removed_cb(ElaCarrier *w, const char *friendid,
                                       void *context)
 {
     ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
-
+    vlogI("carrier_friend_removed_cb.");
     if (cbs && cbs->friend_removed)
         cbs->friend_removed(w, friendid, context);
 }
@@ -188,7 +188,7 @@ static void carrier_friend_invite_cb(ElaCarrier *w, const char *from,
                                      void *context)
 {
     ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
-
+    vlogI("carrier_friend_invite_cb.");
     if (cbs && cbs->friend_invite)
         cbs->friend_invite(w, from, data, len, context);
 }
@@ -277,32 +277,41 @@ int add_friend_anyway(TestContext *context, const char *userid,
 {
     CarrierContext *wctxt = context->carrier;
     int rc;
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     if (ela_is_friend(wctxt->carrier, userid)) {
-        while(!wctxt->robot_online)
-            usleep(500);
-        return 0;
-    }
+        int count = 0;
+        while(!wctxt->robot_online && ++count <120)
+            sleep(1);
 
+        if (count <120) {
+            vlogD("%s Line:%d friend is online", __FUNCTION__, __LINE__);
+            return 0;
+        }
+        else {
+            vlogE("%s Line:%d friend is offline, ela_remove_friend", __FUNCTION__, __LINE__);
+            ela_remove_friend(wctxt->carrier, userid);
+        }
+    }
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     rc = ela_add_friend(wctxt->carrier, address, "auto-reply");
     if (rc < 0) {
         vlogE("Error: attempt to add friend error.");
         return rc;
     }
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     // wait for friend_added callback invoked.
     cond_wait(wctxt->cond);
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     // wait for friend_connection (online) callback invoked.
     cond_wait(wctxt->cond);
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     // wait until robot being notified us connected.
     char buf[2][32];
     rc = read_ack("%32s %32s", buf[0], buf[1]);
     CU_ASSERT_EQUAL_FATAL(rc, 2);
     CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "fadd");
     CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "succeeded");
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     return 0;
 }
 
@@ -385,22 +394,22 @@ void test_stream_scheme(ElaStreamType stream_type, int stream_options,
     char result[32];
 
     context->context_reset(context);
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     rc = add_friend_anyway(context, robotid, robotaddr);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     rc = ela_session_init(wctxt->carrier);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     rc = robot_sinit();
     TEST_ASSERT_TRUE(rc > 0);
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "sinit") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     sctxt->session = ela_session_new(wctxt->carrier, robotid);
     TEST_ASSERT_TRUE(sctxt->session != NULL);
 
@@ -408,43 +417,43 @@ void test_stream_scheme(ElaStreamType stream_type, int stream_options,
                                         stream_type, stream_options,
                                         stream_ctxt->cbs, stream_ctxt);
     TEST_ASSERT_TRUE(stream_ctxt->stream_id > 0);
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     cond_wait(stream_ctxt->cond);
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_initialized);
     TEST_ASSERT_TRUE(stream_ctxt->state_bits & (1 << ElaStreamState_initialized));
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     rc = ela_session_request(sctxt->session, NULL, sctxt->request_complete_cb, sctxt);
     TEST_ASSERT_TRUE(rc == 0);
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     cond_wait(stream_ctxt->cond);
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_transport_ready);
     TEST_ASSERT_TRUE(stream_ctxt->state_bits & (1 << ElaStreamState_transport_ready));
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "srequest") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "received") == 0);
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     rc = write_cmd("sreply confirm %d %d\n", stream_type, stream_options);
     TEST_ASSERT_TRUE(rc > 0);
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     cond_wait(sctxt->request_complete_cond);
     TEST_ASSERT_TRUE(sctxt->request_received == 0);
     TEST_ASSERT_TRUE(sctxt->request_complete_status == 0);
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "sreply") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     cond_wait(stream_ctxt->cond);
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     if (stream_ctxt->state != ElaStreamState_connecting &&
         stream_ctxt->state != ElaStreamState_connected) {
         // if error, consume ctrl acknowlege from robot.
         read_ack("%32s %32s", cmd, result);
     }
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     // Stream 'connecting' state is a transient state.
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_connecting ||
                      stream_ctxt->state == ElaStreamState_connected);
@@ -454,11 +463,11 @@ void test_stream_scheme(ElaStreamType stream_type, int stream_options,
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "sconnect") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     cond_wait(stream_ctxt->cond);
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_connected);
     TEST_ASSERT_TRUE(stream_ctxt->state_bits & (1 << ElaStreamState_connected));
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     rc = do_work_cb ? do_work_cb(context) : 0;
     TEST_ASSERT_TRUE(rc == 0);
 
@@ -469,7 +478,7 @@ void test_stream_scheme(ElaStreamType stream_type, int stream_options,
     cond_wait(stream_ctxt->cond);
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_closed);
     TEST_ASSERT_TRUE(stream_ctxt->state_bits & (1 << ElaStreamState_closed));
-
+vlogD("%s Line:%d", __FUNCTION__, __LINE__);
 cleanup:
     if (stream_ctxt->stream_id > 0) {
         ela_session_remove_stream(sctxt->session, stream_ctxt->stream_id);

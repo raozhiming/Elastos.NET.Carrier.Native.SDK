@@ -36,5 +36,16 @@ export ${DSO_ENV}=${LDPATH}
 if [ "$1" != "" ]; then
     ${SCRIPT_PATH}/elatests $*
 else
-    ${SCRIPT_PATH}/elatests -c ${CONFIG_FILE} $*
+    EXIT_CODE=0
+    loop=1
+    while [ $EXIT_CODE -eq 0 ]; do
+        sleep 2
+        echo "Start loop test :"$loop
+        let loop+=1
+        ${SCRIPT_PATH}/elatests --robot -c ${CONFIG_FILE} $* &
+        ${SCRIPT_PATH}/elatests --cases -c ${CONFIG_FILE} -r 3 $*
+        EXIT_CODE=$?
+    done
+    echo "total loop test :"$loop
+    echo "EXIT_CODE:" $EXIT_CODE
 fi
