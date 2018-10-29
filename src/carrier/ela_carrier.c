@@ -66,6 +66,10 @@
 #include <posix_helper.h>
 #endif
 
+#if !(defined(_WIN32) || defined(_WIN64))
+#define O_BINARY 0
+#endif
+
 #include "version.h"
 #include "ela_carrier.h"
 #include "ela_carrier_impl.h"
@@ -459,7 +463,7 @@ static int convert_old_dhtdata(const char *data_location)
 
     pos = buf + 256;
 
-    fd = open(dhtdata_filename, O_RDONLY);
+    fd = open(dhtdata_filename, O_RDONLY | O_BINARY);
     if (fd < 0) {
         free(buf);
         return ELA_SYS_ERROR(errno);
@@ -476,7 +480,7 @@ static int convert_old_dhtdata(const char *data_location)
     if (extra_data_len) {
         pos += ROUND256(dht_data_len);
 
-        fd = open(eladata_filename, O_RDONLY);
+        fd = open(eladata_filename, O_RDONLY | O_BINARY);
         if (fd < 0) {
             extra_data_len = 0;
             goto write_data;
@@ -555,7 +559,7 @@ write_data:
     journal_filename = (char *)alloca(strlen(data_location) + strlen(data_filename) + 16);
     sprintf(journal_filename, "%s/%s.journal", data_location, data_filename);
 
-    fd = open(journal_filename, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    fd = open(journal_filename, O_RDWR | O_CREAT | O_TRUNC | O_BINARY, S_IRUSR | S_IWUSR);
     if (fd < 0) {
         free(buf);
         return ELA_SYS_ERROR(errno);
@@ -596,7 +600,7 @@ static int _load_persistence_data_i(int fd, persistence_data *data)
     uint8_t *buf;
 
     if (fstat(fd, &st) < 0) {
-        vlogW("Load persistence data failed, stat files error(%d).", errno);
+        vlogW("Load persistence data failed, stat files error(%d). %s", errno, strerror(errno));
         return -1;
     }
 
@@ -606,7 +610,7 @@ static int _load_persistence_data_i(int fd, persistence_data *data)
     }
 
     if (read(fd, (void *)&val, sizeof(val)) != sizeof(val)) {
-        vlogW("Load persistence data failed, read error(%d).", errno);
+        vlogW("Load persistence data failed, read error(%d). %s line %d", errno, strerror(errno), __LINE__);
         return -1;
     }
     val = ntohl(val);
@@ -616,7 +620,7 @@ static int _load_persistence_data_i(int fd, persistence_data *data)
     }
 
     if (read(fd, (void *)&val, sizeof(val)) != sizeof(val)) {
-        vlogW("Load persistence data failed, read error(%d).", errno);
+        vlogW("Load persistence data failed, read error(%d). %s line %d", errno, strerror(errno), __LINE__);
         return -1;
     }
     val = ntohl(val);
@@ -626,7 +630,7 @@ static int _load_persistence_data_i(int fd, persistence_data *data)
     }
 
     if (read(fd, (void *)&val, sizeof(val)) != sizeof(val)) {
-        vlogW("Load persistence data failed, read error(%d).", errno);
+        vlogW("Load persistence data failed, read error(%d). %s line %d", errno, strerror(errno), __LINE__);
         return -1;
     }
     dht_data_len = ntohl(val);
@@ -636,7 +640,7 @@ static int _load_persistence_data_i(int fd, persistence_data *data)
     }
 
     if (read(fd, (void *)&val, sizeof(val)) != sizeof(val)) {
-        vlogW("Load persistence data failed, read error(%d).", errno);
+        vlogW("Load persistence data failed, read error(%d). %s line %d", errno, strerror(errno), __LINE__);
         return -1;
     }
     extra_data_len = ntohl(val);
@@ -651,7 +655,7 @@ static int _load_persistence_data_i(int fd, persistence_data *data)
     }
 
     if (read(fd, p_sum, sizeof(p_sum)) != sizeof(p_sum)) {
-        vlogW("Load persistence data failed, read error(%d).", errno);
+        vlogW("Load persistence data failed, read error(%d). %s line %d", errno, strerror(errno), __LINE__);
         return -1;
     }
 
@@ -663,7 +667,7 @@ static int _load_persistence_data_i(int fd, persistence_data *data)
 
     lseek(fd, 256, SEEK_SET);
     if (read(fd, buf, st.st_size - 256) != (st.st_size - 256)) {
-        vlogW("Load persistence data failed, read error(%d).", errno);
+        vlogW("Load persistence data failed, read error(%d). %s line %d", errno, strerror(errno), __LINE__);
         free(buf);
         return -1;
     }
@@ -733,7 +737,7 @@ failback:
 
     vlogD("Try to loading persistence data from: %s.", filename);
 
-    fd = open(filename, O_RDONLY);
+    fd = open(filename, O_RDONLY | O_BINARY);
     if (fd < 0) {
         vlogD("Loading persistence data failed, cannot open file.");
         FAILBACK_OR_RETURN(-1);
@@ -962,7 +966,7 @@ static int store_persistence_data(ElaCarrier *w)
     journal_filename = (char *)alloca(strlen(w->pref.data_location) + strlen(data_filename) + 16);
     sprintf(journal_filename, "%s/%s.journal", w->pref.data_location, data_filename);
 
-    fd = open(journal_filename, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    fd = open(journal_filename, O_RDWR | O_CREAT | O_TRUNC | O_BINARY, S_IRUSR | S_IWUSR);
     if (fd < 0) {
         free(buf);
         return ELA_SYS_ERROR(errno);

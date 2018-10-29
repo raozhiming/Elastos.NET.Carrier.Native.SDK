@@ -63,7 +63,7 @@ static int connect_robot(const char *host, const char *port)
     assert(host && *host);
     assert(port && *port);
 
-    vlogI("Connecting to test robot(%s:%s).", host, port);
+    vlogI("<cases> Connecting to test robot(%s:%s).", host, port);
 
     while(ntries < 3) {
         cmd_sock = socket_connect(host, port);
@@ -84,20 +84,20 @@ static int connect_robot(const char *host, const char *port)
     }
 
     if(cmd_sock == INVALID_SOCKET) {
-        vlogE("Connecting to test robot failed.");
+        vlogE("<cases> Connecting to test robot failed.");
         return -1;
     }
 
-    vlogI("Connected to robot.");
+    vlogI("<cases> Connected to robot.");
     return 0;
 }
 
 static void disconnect_robot(void)
 {
     if (cmd_sock != INVALID_SOCKET) {
+        vlogI("<cases> Disconnected robot.");
         socket_close(cmd_sock);
         cmd_sock = INVALID_SOCKET;
-        vlogI("Disconnected robot.");
     }
 }
 
@@ -114,7 +114,7 @@ int write_cmd(const char *cmd, ...)
     va_end(ap);
 
     assert(cmd_line[strlen(cmd_line) - 1] == '\n');
-    vlogD("@@@@@@@@ Control command: %.*s", (int)(strlen(cmd_line)-1), cmd_line);
+    vlogD("<cases> @@@@@@@@ Control command: %.*s", (int)(strlen(cmd_line)-1), cmd_line);
 
     return send(cmd_sock, cmd_line, (int)strlen(cmd_line), 0);
 }
@@ -142,10 +142,15 @@ int read_ack(const char *format, ...)
     }
 
     // ingore errors?!
-    if (rc < 0)
+    if (rc < 0) {
+#if defined(_WIN32) || defined(_WIN64)
+        errno = GetLastError();
+#endif
+        vlogE("<cases> recv error. line %d err=%d", __LINE__, errno);
         return -1;
+    }
 
-    vlogD("@@@@@@@@ Got acknowledge: %s", ack_buffer);
+    vlogD("<cases> @@@@@@@@ Got acknowledge: %s", ack_buffer);
 
     va_start(ap, format);
     rc = vsscanf(ack_buffer, format, ap);
@@ -168,11 +173,12 @@ int test_main(int argc, char *argv[])
     int cases_order[64];
     char ack[128];
 
-    optind = 1;
+    optind = 2;
     while ((opt = getopt(argc, argv, "r:c:-:")) != -1) {
         switch (opt) {
         case 'r':
             retryCount = atoi(optarg);
+            printf("retryCount %d\n", retryCount);
             break;
         }
     }
@@ -226,20 +232,20 @@ int test_main(int argc, char *argv[])
 
     read_ack("%32s %45s %52s", ack, robotid, robotaddr);
     if (strcmp(ack, "ready") != 0) {
-        vlogE("Got wrong state from Test Robot: %s", ack);
+        vlogE("<cases> Got wrong state from Test Robot: %s", ack);
         CU_cleanup_registry();
         disconnect_robot();
         return -1;
     }
 
-    vlogI("Got robot ID: %s", robotid);
-    vlogI("Got robot address: %s", robotaddr);
+    vlogI("<cases> Got robot ID: %s", robotid);
+    vlogI("<cases> Got robot address: %s", robotaddr);
 
     CU_basic_run_tests();
 
     fail_cnt = CU_get_number_of_tests_failed();
     if (fail_cnt > 0) {
-        vlogE("Failure Case: %d\n", fail_cnt);
+        vlogE("<cases> Failure Case: %d\n", fail_cnt);
     }
 
     CU_cleanup_registry();

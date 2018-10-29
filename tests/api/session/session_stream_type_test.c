@@ -45,13 +45,13 @@ static void ready_cb(ElaCarrier *w, void *context)
 static
 void friend_added_cb(ElaCarrier *w, const ElaFriendInfo *info, void *context)
 {
-    vlogD("Friend %s added.", info->user_info.userid);
+    vlogD("<cases> Friend %s added.", info->user_info.userid);
     wakeup(context);
 }
 
 static void friend_removed_cb(ElaCarrier *w, const char *friendid, void *context)
 {
-    vlogD("Friend %s removed.", friendid);
+    vlogD("<cases> Friend %s removed.", friendid);
     wakeup(context);
 }
 
@@ -63,7 +63,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
     wakeup(context);
     wctxt->robot_online = (status == ElaConnectionStatus_Connected);
 
-    vlogD("Robot connection status changed -> %s", connection_str(status));
+    vlogD("<cases> Robot connection status changed -> %s", connection_str(status));
 }
 
 static ElaCallbacks callbacks = {
@@ -98,7 +98,7 @@ static void session_request_complete_callback(ElaSession *ws, const char *bundle
 {
     SessionContext *sctxt = (SessionContext *)context;
 
-    vlogD("Session complete, status: %d, reason: %s", status,
+    vlogD("<cases> Session complete, status: %d, reason: %s", status,
           reason ? reason : "null");
 
     sctxt->request_complete_status = status;
@@ -131,7 +131,7 @@ static SessionContext session_context = {
 static void stream_on_data(ElaSession *ws, int stream, const void *data,
                            size_t len, void *context)
 {
-    // vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
+    // vlogD("<cases> Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
 }
 
 static void stream_state_changed(ElaSession *ws, int stream,
@@ -142,7 +142,7 @@ static void stream_state_changed(ElaSession *ws, int stream,
     stream_ctxt->state = state;
     stream_ctxt->state_bits |= (1 << state);
 
-    vlogD("Stream [%d] state changed to: %s", stream, stream_state_name(state));
+    vlogD("<cases> Stream [%d] state changed to: %s", stream, stream_state_name(state));
 
     cond_signal(stream_ctxt->cond);
 }

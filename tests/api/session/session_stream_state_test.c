@@ -45,13 +45,13 @@ static void ready_cb(ElaCarrier *w, void *context)
 static
 void friend_added_cb(ElaCarrier *w, const ElaFriendInfo *info, void *context)
 {
-    vlogD("Friend %s added.", info->user_info.userid);
+    vlogD("<cases> Friend %s added.", info->user_info.userid);
     wakeup(context);
 }
 
 static void friend_removed_cb(ElaCarrier *w, const char *friendid, void *context)
 {
-    vlogD("Friend %s removed.", friendid);
+    vlogD("<cases> Friend %s removed.", friendid);
     wakeup(context);
 }
 
@@ -63,7 +63,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
     wakeup(context);
     wctxt->robot_online = (status == ElaConnectionStatus_Connected);
 
-    vlogD("Robot connection status changed -> %s", connection_str(status));
+    vlogD("<cases> Robot connection status changed -> %s", connection_str(status));
 }
 
 static ElaCallbacks callbacks = {
@@ -98,7 +98,7 @@ static void session_request_complete_callback(ElaSession *ws, const char *bundle
 {
     SessionContext *sctxt = (SessionContext *)context;
 
-    vlogD("Session complete, status: %d, reason: %s", status,
+    vlogD("<cases> Session complete, status: %d, reason: %s", status,
           reason ? reason : "null");
 
     sctxt->request_complete_status = status;
@@ -131,7 +131,7 @@ static SessionContext session_context = {
 static void stream_on_data(ElaSession *ws, int stream, const void *data,
                            size_t len, void *context)
 {
-    // vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
+    // vlogD("<cases> Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
 }
 
 static void stream_state_changed(ElaSession *ws, int stream,
@@ -142,7 +142,7 @@ static void stream_state_changed(ElaSession *ws, int stream,
     stream_ctxt->state = state;
     stream_ctxt->state_bits |= (1 << state);
 
-    vlogD("Stream [%d] state changed to: %s", stream, stream_state_name(state));
+    vlogD("<cases> Stream [%d] state changed to: %s", stream, stream_state_name(state));
 
     cond_signal(stream_ctxt->cond);
 }
@@ -227,15 +227,15 @@ void test_stream_state_scheme(int stream_options, TestContext *context,
 
     rc = ela_session_init(wctxt->carrier);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
     rc = robot_sinit();
     TEST_ASSERT_TRUE(rc > 0);
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
     rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "sinit") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
     sctxt->session = ela_session_new(wctxt->carrier, robotid);
     TEST_ASSERT_TRUE(sctxt->session != NULL);
 
@@ -243,21 +243,21 @@ vlogD("%s Line:%d", __FUNCTION__, __LINE__);
                                         ElaStreamType_text, stream_options,
                                         stream_ctxt->cbs, stream_ctxt);
     TEST_ASSERT_TRUE(stream_ctxt->stream_id > 0);
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
     cond_wait(stream_ctxt->cond);
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_initialized);
     TEST_ASSERT_TRUE(stream_ctxt->state_bits & (1 << ElaStreamState_initialized));
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
     rc = check_state_cb(context, ElaStreamState_initialized);
     TEST_ASSERT_TRUE(rc == 0);
 
     rc = ela_session_request(sctxt->session, NULL, sctxt->request_complete_cb, sctxt);
     TEST_ASSERT_TRUE(rc == 0);
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
     cond_wait(stream_ctxt->cond);
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_transport_ready);
     TEST_ASSERT_TRUE(stream_ctxt->state_bits & (1 << ElaStreamState_transport_ready));
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
     rc = check_state_cb(context, ElaStreamState_transport_ready);
     TEST_ASSERT_TRUE(rc == 0);
 
@@ -265,22 +265,22 @@ vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "srequest") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "received") == 0);
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
     rc = write_cmd("sreply confirm %d %d\n", ElaStreamType_text,
                    stream_options);
     TEST_ASSERT_TRUE(rc > 0);
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
     cond_wait(sctxt->request_complete_cond);
     TEST_ASSERT_TRUE(sctxt->request_received == 0);
     TEST_ASSERT_TRUE(sctxt->request_complete_status == 0);
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
     rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "sreply") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
     cond_wait(stream_ctxt->cond);
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
     if (stream_ctxt->state != ElaStreamState_connecting &&
         stream_ctxt->state != ElaStreamState_connected) {
         // if error, consume ctrl acknowlege from robot.
@@ -296,27 +296,27 @@ vlogD("%s Line:%d", __FUNCTION__, __LINE__);
     TEST_ASSERT_TRUE(rc == 0);
     TEST_ASSERT_TRUE(cur_state == ElaStreamState_connecting ||
                      cur_state == ElaStreamState_connected);
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
     rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "sconnect") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
     cond_wait(&stream_cond);
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_connected);
     TEST_ASSERT_TRUE(stream_ctxt->state_bits & (1 << ElaStreamState_connected));
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
     rc = check_state_cb(context, ElaStreamState_connected);
     TEST_ASSERT_TRUE(rc == 0);
 
     rc = ela_session_remove_stream(sctxt->session, stream_ctxt->stream_id);
     TEST_ASSERT_TRUE(rc == 0);
     stream_ctxt->stream_id = -1;
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
     cond_wait(stream_ctxt->cond);
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_closed);
     TEST_ASSERT_TRUE(stream_ctxt->state_bits & (1 << ElaStreamState_closed));
-vlogD("%s Line:%d", __FUNCTION__, __LINE__);
+vlogD("<cases> %s Line:%d", __FUNCTION__, __LINE__);
 cleanup:
     if (stream_ctxt->stream_id > 0) {
         ela_session_remove_stream(sctxt->session, stream_ctxt->stream_id);

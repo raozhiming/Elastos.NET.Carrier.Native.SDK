@@ -84,16 +84,16 @@ static void test_get_self_info(void)
     };
 
     memset(&me, 0, sizeof(me));
-
+printf("Function:%s Line %d\n", __FUNCTION__, __LINE__);
     p = ela_get_userid(w, info.userid, sizeof(info.userid));
     CU_ASSERT_PTR_NOT_NULL_FATAL(p);
-
+printf("Function:%s Line %d\n", __FUNCTION__, __LINE__);
     rc = ela_set_self_info(w, &info);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
-
+printf("Function:%s Line %d\n", __FUNCTION__, __LINE__);
     rc = ela_get_self_info(w, &me);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
-
+printf("Function:%s Line %d\n", __FUNCTION__, __LINE__);
     CU_ASSERT_STRING_EQUAL(me.userid, info.userid);
     CU_ASSERT_STRING_EQUAL(me.region, info.region);
     CU_ASSERT_STRING_EQUAL(me.phone, info.phone);

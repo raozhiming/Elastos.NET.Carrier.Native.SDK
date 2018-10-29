@@ -41,13 +41,13 @@ static void ready_cb(ElaCarrier *w, void *context)
 
 static void friend_added_cb(ElaCarrier *w, const ElaFriendInfo *info, void *context)
 {
-    vlogD("Friend %s added.", info->user_info.userid);
+    vlogD("<cases> Friend %s added.", info->user_info.userid);
     wakeup(context);
 }
 
 static void friend_removed_cb(ElaCarrier *w, const char *friendid, void *context)
 {
-    vlogD("Friend %s removed.", friendid);
+    vlogD("<cases> Friend %s removed.", friendid);
     wakeup(context);
 }
 
@@ -59,7 +59,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
     wakeup(context);
     wctxt->robot_online = (status == ElaConnectionStatus_Connected);
 
-    vlogD("Robot connection status changed -> %s", connection_str(status));
+    vlogD("<cases> Robot connection status changed -> %s", connection_str(status));
 }
 
 static ElaCallbacks callbacks = {

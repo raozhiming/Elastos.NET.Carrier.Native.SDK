@@ -47,30 +47,30 @@
 
 static void print_user_info(const ElaUserInfo* info)
 {
-    vlogD("       userid: %s", info->userid);
-    vlogD("         name: %s", info->name);
-    vlogD("  description: %s", info->description);
-    vlogD("   has_avatar: %s", info->has_avatar ? "true" : "false");
-    vlogD("       gender: %s", info->gender);
-    vlogD("        phone: %s", info->phone);
-    vlogD("        email: %s", info->email);
-    vlogD("       region: %s", info->region);
+    vlogD("<Robot>        userid: %s", info->userid);
+    vlogD("<Robot>          name: %s", info->name);
+    vlogD("<Robot>   description: %s", info->description);
+    vlogD("<Robot>    has_avatar: %s", info->has_avatar ? "true" : "false");
+    vlogD("<Robot>        gender: %s", info->gender);
+    vlogD("<Robot>         phone: %s", info->phone);
+    vlogD("<Robot>         email: %s", info->email);
+    vlogD("<Robot>        region: %s", info->region);
 }
 
 void print_friend_info(const ElaFriendInfo* info, int order)
 {
     if (order > 0)
-        vlogD(" friend %d:", order);
+        vlogD("<Robot>  friend %d:", order);
 
     print_user_info(&info->user_info);
-    vlogD("        label: %s", info->label);
-    vlogD("     presence: %s", info->presence);
+    vlogD("<Robot>         label: %s", info->label);
+    vlogD("<Robot>      presence: %s", info->presence);
 }
 
 static void connection_status_cb(ElaCarrier *w, ElaConnectionStatus status,
                                  void *context)
 {
-    vlogD("Robot connection status changed -> %s", connection_str(status));
+    vlogD("<Robot> Robot connection status changed -> %s", connection_str(status));
 }
 
 static void ready_cb(ElaCarrier *w, void *context)
@@ -81,14 +81,14 @@ static void ready_cb(ElaCarrier *w, void *context)
     ela_get_userid(w, robotid, sizeof(robotid));
     ela_get_address(w, address, sizeof(address));
 
-    vlogI("Robot is ready: userid: %s\n\t\t\taddress:%s", robotid, address);
+    vlogI("<Robot> Robot is ready: userid: %s\n\t\t\taddress:%s", robotid, address);
     write_ack("ready %s %s\n", robotid, address);
 }
 
 static
 void self_info_cb(ElaCarrier *w, const ElaUserInfo *info, void *context)
 {
-    vlogD("Received current user information:");
+    vlogD("<Robot> Received current user information:");
     print_user_info(info);
 }
 
@@ -100,7 +100,7 @@ bool friend_list_cb(ElaCarrier* w, const ElaFriendInfo *info, void *context)
 
     if (info) {
         if (!grouped) {
-            vlogD("Received friend list and listed below:");
+            vlogD("<Robot> Received friend list and listed below:");
             grouped = true;
         }
         print_friend_info(info, idx);
@@ -120,7 +120,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
                                  ElaConnectionStatus status, void *context)
 {
     TestContext *ctx = (TestContext *)context;
-    vlogD("Friend %s's connection status changed -> %s",
+    vlogD("<Robot> Friend %s's connection status changed -> %s",
           friendid, connection_str(status));
 
     if (ctx->carrier->fadd_in_progress) {
@@ -134,7 +134,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
 static void friend_info_cb(ElaCarrier *w, const char *friendid,
                           const ElaFriendInfo *info, void *context)
 {
-    vlogD("Friend %s's information changed ->", friendid);
+    vlogD("<Robot> Friend %s's information changed ->", friendid);
     print_friend_info(info, 0);
 }
 
@@ -147,7 +147,7 @@ static const char *presence_name[] = {
 static void friend_presence_cb(ElaCarrier *w, const char *friendid,
                                ElaPresenceStatus status, void *context)
 {
-    vlogI("Friend %s's presence changed -> %s", friendid,
+    vlogI("<Robot> Friend %s's presence changed -> %s", friendid,
           presence_name[status]);
 }
 
@@ -156,24 +156,24 @@ static void friend_request_cb(ElaCarrier *w, const char *userid,
 {
     TestContext *ctx = (TestContext *)context;
 
-    vlogD("Received friend request from user %s", userid);
+    vlogD("<Robot> Received friend request from user %s", userid);
     print_user_info(info);
     printf("hello:%s\n", hello);
-    vlogD("  hello: %s", hello);
+    vlogD("<Robot>   hello: %s", hello);
 
     if (strcmp(hello, "auto-reply") == 0) {
         int rc;
         ctx->carrier->fadd_in_progress = true;
         rc = ela_accept_friend(w, userid);
         if (rc < 0) {
-            vlogE("Accept friend request from %s error (0x%x)",
+            vlogE("<Robot> Accept friend request from %s error (0x%x)",
                             userid, ela_get_error());
             if (ctx->carrier->fadd_in_progress) {
                 write_ack("fadd failed\n");
             }
-            vlogD("fadd failed");
+            vlogD("<Robot> fadd failed");
         } else {
-            vlogD("Accept friend request from %s success", userid);
+            vlogD("<Robot> Accept friend request from %s success", userid);
         }
 
     } else {
@@ -184,21 +184,21 @@ static void friend_request_cb(ElaCarrier *w, const char *userid,
 static void friend_added_cb(ElaCarrier *w, const ElaFriendInfo *info,
                             void *context)
 {
-    vlogI("New friend %s added", info->user_info.userid);
+    vlogI("<Robot> New friend %s added", info->user_info.userid);
     print_friend_info(info, 0);
 }
 
 static void friend_removed_cb(ElaCarrier* w, const char* friendid, void *context)
 {
-    vlogI("Friend %s is removed", friendid);
+    vlogI("<Robot> Friend %s is removed", friendid);
     write_ack("fremove succeeded\n");
 }
 
 static void friend_message_cb(ElaCarrier *w, const char *from,
                              const void *msg, size_t len, void *context)
 {
-    vlogD("Received message from %s", from);
-    vlogD(" msg: %s", (const char *)msg);
+    vlogD("<Robot> Received message from %s", from);
+    vlogD("<Robot>  msg: %s", (const char *)msg);
 
     write_ack("%s\n", msg);
 }
@@ -206,8 +206,8 @@ static void friend_message_cb(ElaCarrier *w, const char *from,
 static void friend_invite_cb(ElaCarrier *w, const char *from,
                              const void *data, size_t len, void *context)
 {
-    vlogD("Recevied friend invite from %s", from);
-    vlogD(" data: %s", (const char *)data);
+    vlogD("<Robot> Recevied friend invite from %s", from);
+    vlogD("<Robot>  data: %s", (const char *)data);
 
     write_ack("data %s\n", data);
 }
@@ -270,7 +270,7 @@ int robot_main(int argc, char *argv[])
 
     opts.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode) * opts.bootstraps_size);
     if (!opts.bootstraps) {
-        vlogE("Error: out of memory.");
+        vlogE("<Robot> Error: out of memory.");
         return -1;
     }
 
@@ -292,7 +292,7 @@ int robot_main(int argc, char *argv[])
 
     if (!w) {
         write_ack("failed\n");
-        vlogE("Carrier new error (0x%x)", ela_get_error());
+        vlogE("<Robot> Carrier new error (0x%x)", ela_get_error());
         return -1;
     }
 
@@ -309,7 +309,7 @@ int robot_main(int argc, char *argv[])
 
     stop_cmd_listener();
 
-    vlogI("Carrier exit");
+    vlogI("<Robot> Carrier exit");
 
 #if defined(_WIN32) || defined(_WIN64)
     // Windows PIPE has no EOF, write a 0xFF indicate end of pipe manually.

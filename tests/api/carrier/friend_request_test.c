@@ -71,14 +71,14 @@ static void ready_cb(ElaCarrier *w, void *context)
 static
 void friend_added_cb(ElaCarrier *w, const ElaFriendInfo *info, void *context)
 {
-    vlogD("Friend %s added.", info->user_info.userid);
+    vlogD("<cases> Friend %s added.", info->user_info.userid);
     wakeup(context);
 }
 
 static void friend_removed_cb(ElaCarrier *w, const char *friendid, void *context)
 {
     wakeup(context);
-    vlogD("Friend %s removed.\n", friendid);
+    vlogD("<cases> Friend %s removed.\n", friendid);
 }
 
 static void friend_connection_cb(ElaCarrier *w, const char *friendid,
@@ -90,7 +90,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
     wctxt->robot_online = (status == ElaConnectionStatus_Connected);
     wakeup(context);
 
-    vlogD("Robot connection status changed -> %s", connection_str(status));
+    vlogD("<cases> Robot connection status changed -> %s", connection_str(status));
 }
 
 static
@@ -153,21 +153,21 @@ static void test_add_friend(void)
     int rc;
 
     test_context.context_reset(&test_context);
-
+printf("Function:%s Line %d\n", __FUNCTION__, __LINE__);
     rc = remove_friend_anyway(&test_context, robotid);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_FALSE_FATAL(ela_is_friend(wctxt->carrier, robotid));
-
+printf("Function:%s Line %d\n", __FUNCTION__, __LINE__);
     rc = ela_add_friend(wctxt->carrier, robotaddr, "hello");
     CU_ASSERT_EQUAL_FATAL(rc, 0);
-
+printf("Function:%s Line %d\n", __FUNCTION__, __LINE__);
     // wait until robot having received "fadd” request.
     char buf[2][32];
     rc = read_ack("%32s %32s", buf[0], buf[1]);
     CU_ASSERT_EQUAL_FATAL(rc, 2);
     CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "hello");
     CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "hello");
-
+printf("Function:%s Line %d\n", __FUNCTION__, __LINE__);
     ela_get_userid(wctxt->carrier, userid, sizeof(userid));
     rc = write_cmd("faccept %s\n", userid);
     CU_ASSERT_FATAL(rc > 0);
@@ -175,14 +175,16 @@ static void test_add_friend(void)
     // wait for friend_added() callback to be invoked.
     cond_trywait(wctxt->cond, 60000);
     CU_ASSERT_TRUE(ela_is_friend(wctxt->carrier, robotid));
+printf("Function:%s Line %d\n", __FUNCTION__, __LINE__);
     // wait for friend connection (online) callback to be invoked.
     cond_wait(wctxt->cond);
     CU_ASSERT_TRUE(extra->connection_status == ElaConnectionStatus_Connected);
-
+printf("Function:%s Line %d\n", __FUNCTION__, __LINE__);
     rc = read_ack("%32s %32s", buf[0], buf[1]);
     CU_ASSERT_EQUAL(rc, 2);
     CU_ASSERT_STRING_EQUAL(buf[0], "fadd");
     CU_ASSERT_STRING_EQUAL(buf[1], "succeeded");
+printf("Function:%s Line %d\n", __FUNCTION__, __LINE__);
 }
 
 static void test_accept_friend(void)
@@ -290,11 +292,12 @@ int friend_request_test_suite_init(void)
         CU_FAIL("Error: test suite initialize error");
         return -1;
     }
-    if (ela_is_friend(test_context.carrier->carrier, robotid)) {
-        // wait for robot online.
-        cond_wait(test_context.carrier->cond);
-    }
-
+    // printf("Function:%s Line %d\n", __FUNCTION__, __LINE__);
+    // if (ela_is_friend(test_context.carrier->carrier, robotid)) {
+    //     // wait for robot online.
+    //     cond_wait(test_context.carrier->cond);
+    // }
+printf("Function:%s Line %d\n", __FUNCTION__, __LINE__);
     return 0;
 }
 
