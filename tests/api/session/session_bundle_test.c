@@ -46,11 +46,13 @@ static void ready_cb(ElaCarrier *w, void *context)
 static
 void friend_added_cb(ElaCarrier *w, const ElaFriendInfo *info, void *context)
 {
+    vlogI("<Cases> New friend %s added", info->user_info.userid);
     wakeup(context);
 }
 
 static void friend_removed_cb(ElaCarrier *w, const char *friendid, void *context)
 {
+    vlogI("<Cases> Friend %s is removed", friendid);
     wakeup(context);
 }
 
@@ -63,7 +65,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
                          ONLINE : OFFLINE;
     cond_signal(wctxt->friend_status_cond);
 
-    vlogD("Robot connection status changed -> %s", connection_str(status));
+    vlogI("<Cases> Robot connection status changed -> %s", connection_str(status));
 }
 
 static ElaCallbacks callbacks = {
@@ -147,7 +149,7 @@ static SessionContext session_context = {
 static void stream_on_data(ElaSession *ws, int stream,
                            const void *data, size_t len, void *context)
 {
-    vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
+    vlogD("<Cases> Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
 }
 
 static void stream_state_changed(ElaSession *ws, int stream,
@@ -158,7 +160,7 @@ static void stream_state_changed(ElaSession *ws, int stream,
     stream_ctxt->state = state;
     stream_ctxt->state_bits |= 1 << state;
 
-    vlogD("Stream [%d] state changed to: %s", stream, stream_state_name(state));
+    vlogD("<Cases> Stream [%d] state changed to: %s", stream, stream_state_name(state));
 
     cond_signal(stream_ctxt->cond);
 }

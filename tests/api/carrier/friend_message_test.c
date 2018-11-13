@@ -73,7 +73,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
                          ONLINE : OFFLINE;
     cond_signal(wctxt->friend_status_cond);
 
-    vlogD("Robot connection status changed -> %s", connection_str(status));
+    vlogI("<Cases> Robot connection status changed -> %s", connection_str(status));
 }
 
 static void friend_message_cb(ElaCarrier *w, const char *from, const void *msg, size_t len,

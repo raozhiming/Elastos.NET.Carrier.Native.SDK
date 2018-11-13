@@ -13,13 +13,12 @@ build_script:
   - cmd: cmake -G "NMake Makefiles" -DCMAKE_INSTALL_PREFIX=outputs ..\..
   - cmd: nmake
   - cmd: nmake install
-  - cmd: nmake dist
 
 for:
 -
   matrix:
     only:
-      #- platform: x86
+      - platform: x86
       - platform: x64
       #- platform: Any CPU
 

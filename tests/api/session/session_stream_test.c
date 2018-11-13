@@ -83,7 +83,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
                          ONLINE : OFFLINE;
     cond_signal(wctxt->friend_status_cond);
 
-    vlogD("Robot connection status changed -> %s", connection_str(status));
+    vlogI("<Cases> Robot connection status changed -> %s", connection_str(status));
 }
 
 static ElaCallbacks callbacks = {
@@ -120,7 +120,7 @@ static void session_request_complete_callback(ElaSession *ws, const char *bundle
 {
     SessionContext *sctxt = (SessionContext *)context;
 
-    vlogD("Session complete, status: %d, reason: %s", status,
+    vlogD("<Cases> Session complete, status: %d, reason: %s", status,
           reason ? reason : "null");
 
     sctxt->request_complete_status = status;
@@ -165,7 +165,7 @@ static StreamContextExtra stream_extra = {
 static void stream_on_data(ElaSession *ws, int stream, const void *data,
                            size_t len, void *context)
 {
-    vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
+    vlogD("<Cases> Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
 }
 
 static void stream_state_changed(ElaSession *ws, int stream,
@@ -176,7 +176,7 @@ static void stream_state_changed(ElaSession *ws, int stream,
     sc->state = state;
     sc->state_bits |= (1 << state);
 
-    vlogD("Stream [%d] state changed to: %s", stream, stream_state_name(state));
+    vlogD("<Cases> Stream [%d] state changed to: %s", stream, stream_state_name(state));
 
     cond_signal(sc->cond);
 }
@@ -238,8 +238,8 @@ static void *bulk_write_routine(void *arg)
     packet = (char *)alloca(extra->packet_size);
     memset(packet, 'D', extra->packet_size);
 
-    vlogD("Begin sending data...");
-    vlogD("stream %d send: total %d packets and %d bytes per packet.",
+    vlogD("<Cases> Begin sending data...");
+    vlogD("<Cases> stream %d send: total %d packets and %d bytes per packet.",
           stream_ctxt->stream_id, extra->packet_count, extra->packet_size);
 
     gettimeofday(&start, NULL);
@@ -257,7 +257,7 @@ static void *bulk_write_routine(void *arg)
                     continue;
                 }
                 else {
-                    vlogE("Write data failed (0x%x)", ela_get_error());
+                    vlogE("<Cases> Write data failed (0x%x)", ela_get_error());
                     return NULL;
                 }
             }
@@ -266,7 +266,7 @@ static void *bulk_write_routine(void *arg)
         } while (sent < total);
 
         if (i % 1000 == 0)
-            vlogD(".");
+            vlogD("<Cases> .");
     }
     gettimeofday(&end, NULL);
 
@@ -274,8 +274,8 @@ static void *bulk_write_routine(void *arg)
                      (end.tv_usec - start.tv_usec)) / 1000 + 1;
     speed = (((float)(extra->packet_size * extra->packet_count) / duration) * 1000) / 1024;
 
-    vlogD("Finished writing");
-    vlogD("Total %"PRIu64" bytes in %d.%d seconds. %.2f KB/s",
+    vlogD("<Cases> Finished writing");
+    vlogD("<Cases> Total %"PRIu64" bytes in %d.%d seconds. %.2f KB/s",
           (uint64_t)(extra->packet_size * extra->packet_count),
           (int)(duration / 1000), (int)(duration % 1000), speed);
 
@@ -310,7 +310,7 @@ static int do_bulk_write(TestContext *context)
 
     rc = pthread_create(&thread, NULL, bulk_write_routine, context);
     if (rc != 0) {
-        vlogE("create thread failed.");
+        vlogE("<Cases> create thread failed.");
         return -1;
     }
 

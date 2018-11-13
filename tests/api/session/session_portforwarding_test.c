@@ -81,7 +81,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
                          ONLINE : OFFLINE;
     cond_signal(wctxt->friend_status_cond);
 
-    vlogD("Robot node connection status changed -> %s", connection_str(status));
+    vlogI("<Cases> Robot connection status changed -> %s", connection_str(status));
 }
 
 static ElaCallbacks callbacks = {
@@ -119,7 +119,7 @@ void session_request_complete_callback(ElaSession *ws, const char *bundle, int s
 {
     SessionContext *sctxt = (SessionContext *)context;
 
-    vlogD("Session request complete, status:%d, reason: %s", status,
+    vlogI("<Cases> Session request complete, status:%d, reason: %s", status,
           reason ? reason : "null");
 
     sctxt->request_complete_status = status;
@@ -152,7 +152,7 @@ static SessionContext session_context = {
 static void stream_on_data(ElaSession *ws, int stream, const void *data,
                            size_t len, void *context)
 {
-    vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
+    vlogD("<Cases> Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
 }
 
 static void stream_state_changed(ElaSession *ws, int stream,
@@ -163,7 +163,7 @@ static void stream_state_changed(ElaSession *ws, int stream,
     stream_ctxt->state = state;
     stream_ctxt->state_bits |= 1 << state;
 
-    vlogD("stream %d state changed to: %s", stream, stream_state_name(state));
+    vlogI("<Cases> stream %d state changed to: %s", stream, stream_state_name(state));
 
     cond_signal(stream_ctxt->cond);
 }
@@ -251,13 +251,13 @@ static void *client_thread_entry(void *argv)
 
     sockfd = socket_connect(ctxt->ip, ctxt->port);
     if (sockfd < 0) {
-        vlogE("client connect to %s:%s failed", ctxt->ip, ctxt->port);
+        vlogE("<Cases> client connect to %s:%s failed", ctxt->ip, ctxt->port);
         return NULL;
     }
 
     usleep(500);
 
-    vlogI("client begin to send data:");
+    vlogI("<Cases> client begin to send data:");
 
     for (i = 0; i < ctxt->sent_count; i++) {
         int left = sizeof(data);
@@ -266,7 +266,7 @@ static void *client_thread_entry(void *argv)
         while(left > 0) {
             rc = send(sockfd, pos, left, 0);
             if (rc < 0) {
-                vlogE("client send data error (%d)", errno);
+                vlogE("<Cases> client send data error (%d)", errno);
                 socket_close(sockfd);
                 return NULL;
             }
@@ -275,11 +275,11 @@ static void *client_thread_entry(void *argv)
             pos += rc;
         }
 
-        vlogD(".");
+        vlogD("<Cases> .");
     }
 
-    vlogI("finished sending %d Kbytes data", ctxt->sent_count);
-    vlogI("client send data in success");
+    vlogI("<Cases> finished sending %d Kbytes data", ctxt->sent_count);
+    vlogI("<Cases> client send data in success");
 
     socket_close(sockfd);
     ctxt->return_val = 0;
@@ -299,14 +299,14 @@ static void *server_thread_entry(void *argv)
 
     sockfd = socket_create(SOCK_STREAM, ctxt->ip, ctxt->port);
     if (sockfd < 0) {
-        vlogE("server create on %s:%s failed (sockfd:%d) (%d)",
+        vlogE("<Cases> server create on %s:%s failed (sockfd:%d) (%d)",
               ctxt->ip, ctxt->port, sockfd, errno);
         return NULL;
     }
 
     rc = listen(sockfd, 1);
     if (rc < 0) {
-        vlogE("server listen failed (%d)", errno);
+        vlogE("<Cases> server listen failed (%d)", errno);
         socket_close(sockfd);
         return NULL;
     }
@@ -317,11 +317,11 @@ static void *server_thread_entry(void *argv)
     socket_close((sockfd));
 
     if (data_sockfd < 0) {
-        vlogE("server accept new socket failed.");
+        vlogE("<Cases> server accept new socket failed.");
         return NULL;
     }
 
-    vlogI("server begin to receive data:");
+    vlogI("<Cases> server begin to receive data:");
 
     do {
         memset(data, 0, sizeof(data));
@@ -329,17 +329,17 @@ static void *server_thread_entry(void *argv)
         rc = (int)recv(data_sockfd, data, sizeof(data) - 1, 0);
         if (rc > 0) {
             ctxt->recv_count += rc;
-            vlogD("%s", data);
+            vlogD("<Cases> %s", data);
         }
 
     } while (rc > 0);
 
     if (rc == 0) {
         ctxt->recv_count /= 1024;
-        vlogI("finished receiving %d Kbytes data, closed by remote peer.",
+        vlogI("<Cases> finished receiving %d Kbytes data, closed by remote peer.",
               ctxt->recv_count);
     } else if (rc < 0)
-        vlogE("receiving error(%d)", errno);
+        vlogE("<Cases> receiving error(%d)", errno);
     else
         assert(0);
 
@@ -373,9 +373,9 @@ static int do_portforwarding_internal(TestContext *context)
                             extra->shadow_port);
 
     if (pfid > 0) {
-        vlogD("Open portforwarding successfully");
+        vlogD("<Cases> Open portforwarding successfully");
     } else {
-        vlogE("Open portforwarding failed (0x%x)", pfid);
+        vlogE("<Cases> Open portforwarding failed (0x%x)", pfid);
     }
 
     TEST_ASSERT_TRUE(pfid > 0);

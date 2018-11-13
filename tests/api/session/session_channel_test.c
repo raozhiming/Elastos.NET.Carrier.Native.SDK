@@ -86,7 +86,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
                          ONLINE : OFFLINE;
     cond_signal(wctxt->friend_status_cond);
 
-    vlogD("Robot connection status changed -> %s", connection_str(status));
+    vlogI("<Cases> Robot connection status changed -> %s", connection_str(status));
 }
 
 static ElaCallbacks callbacks = {
@@ -123,7 +123,7 @@ static void session_request_complete_callback(ElaSession *ws, const char *bundle
 {
     SessionContext *sctxt = (SessionContext *)context;
 
-    vlogD("Session complete, status: %d, reason: %s", status,
+    vlogD("<Cases> Session complete, status: %d, reason: %s", status,
           reason ? reason : "null");
 
     sctxt->request_complete_status = status;
@@ -183,7 +183,7 @@ static StreamContextExtra stream_extra = {
 static void stream_on_data(ElaSession *ws, int stream,
                            const void *data, size_t len, void *context)
 {
-    vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
+    vlogD("<Cases> Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
 }
 
 static void stream_state_changed(ElaSession *ws, int stream,
@@ -194,7 +194,7 @@ static void stream_state_changed(ElaSession *ws, int stream,
     stream_ctxt->state = state;
     stream_ctxt->state_bits |= (1 << state);
 
-    vlogD("Stream [%d] state changed to: %s", stream, stream_state_name(state));
+    vlogD("<Cases> Stream [%d] state changed to: %s", stream, stream_state_name(state));
 
     cond_signal(stream_ctxt->cond);
 }
@@ -202,7 +202,7 @@ static void stream_state_changed(ElaSession *ws, int stream,
 static bool on_channel_open(ElaSession *ws, int stream, int channel,
                             const char *cookie, void *context)
 {
-    vlogD("Stream request open new channel %d.", channel);
+    vlogD("<Cases> Stream request open new channel %d.", channel);
     return true;
 }
 
@@ -211,7 +211,7 @@ void on_channel_opened(ElaSession *ws, int stream, int channel, void *context)
 {
     StreamContextExtra *extra = ((StreamContext *)context)->extra;
 
-    vlogD("Channel %d opened.", channel);
+    vlogD("<Cases> Channel %d opened.", channel);
 
     //TODO:
     extra->channel_error_state[channel - 1] = 0;
@@ -232,7 +232,7 @@ static void on_channel_close(ElaSession *ws, int stream, int channel,
         "Error"
     };
 
-    vlogD("Channel %d closeing with %s.", channel, state_name[reason]);
+    vlogD("<Cases> Channel %d closeing with %s.", channel, state_name[reason]);
 
     // TODO:
     if (reason == CloseReason_Error || reason == CloseReason_Timeout)
@@ -246,7 +246,7 @@ static bool on_channel_data(ElaSession *ws, int stream, int channel,
 {
     StreamContextExtra *extra = ((StreamContext *)context)->extra;
 
-    vlogD("stream [%d] channel [%d] received data [%.*s]",
+    vlogD("<Cases> stream [%d] channel [%d] received data [%.*s]",
           stream, channel, (int)len, (char*)data);
 
     cond_signal(extra->channel_cond);
@@ -258,7 +258,7 @@ static void on_channel_pending(ElaSession *ws, int stream, int channel,
 {
     StreamContextExtra *extra = ((StreamContext *)context)->extra;
 
-    vlogD("stream [%d] channel [%d] pend data.", stream, channel);
+    vlogD("<Cases> stream [%d] channel [%d] pend data.", stream, channel);
 
     cond_signal(extra->channel_cond);
 }
@@ -268,7 +268,7 @@ static void on_channel_resume(ElaSession *ws, int stream, int channel,
 {
     StreamContextExtra *extra = ((StreamContext *)context)->extra;
 
-    vlogD("stream [%d] channel [%d] resume data.", stream, channel);
+    vlogD("<Cases> stream [%d] channel [%d] resume data.", stream, channel);
 
     cond_signal(extra->channel_cond);
 }
@@ -342,7 +342,7 @@ static int write_channel_data(ElaSession *session, int stream, int channel,
                 usleep(100);
                 continue;
             } else {
-                vlogE("Write channel data failed (0x%x)",
+                vlogE("<Cases> Write channel data failed (0x%x)",
                       ela_get_error());
                 return -1;
             }
@@ -376,8 +376,8 @@ static void *bulk_channel_write_routine(void *arg)
     packet = (char *)alloca(pkt_sz);
     memset(packet, 'D', pkt_sz);
 
-    vlogD("Begin sending data...");
-    vlogD("Stream %d channel %d send %d packets in total and %d bytes "
+    vlogD("<Cases> Begin sending data...");
+    vlogD("<Cases> Stream %d channel %d send %d packets in total and %d bytes "
           "per packet.", ctxt->stream->stream_id,
           extra->channel_id[0], pkt_count, pkt_sz);
 
@@ -391,7 +391,7 @@ static void *bulk_channel_write_routine(void *arg)
             return NULL;
 
         if (i % 1000 == 0)
-            vlogD(".");
+            vlogD("<Cases> .");
     }
     gettimeofday(&end, NULL);
 
@@ -399,7 +399,7 @@ static void *bulk_channel_write_routine(void *arg)
                      (end.tv_usec - start.tv_usec)) / 1000 + 1;
     speed = (((float)(pkt_sz * pkt_count) / duration) * 1000) / 1024;
 
-    vlogD("Finish! Total %"PRIu64" bytes in %d.%d seconds. %.2f KB/s",
+    vlogD("<Cases> Finish! Total %"PRIu64" bytes in %d.%d seconds. %.2f KB/s",
           (uint64_t)(pkt_sz * pkt_count),
           (int)(duration / 1000), (int)(duration % 1000), speed);
 
@@ -421,7 +421,7 @@ static int do_bulk_channel_write(TestContext *context)
 
     rc = pthread_create(&thread, NULL, bulk_channel_write_routine, context);
     if (rc != 0) {
-        vlogE("create thread failed.");
+        vlogE("<Cases> create thread failed.");
         return -1;
     }
 
@@ -448,7 +448,7 @@ static void *bulk_multiple_channels_write_routine(void *arg)
         extra->channel_id[i] = ela_stream_open_channel(ctxt->session->session,
                                             ctxt->stream->stream_id, "cookie");
         if (extra->channel_id[i] < 0) {
-            vlogE("Open new channel %d failed.", i + 1);
+            vlogE("<Cases> Open new channel %d failed.", i + 1);
             //reclaim opened channels
             for (i = 0; i < extra->channel_count; i++)
                 ela_stream_close_channel(ctxt->session->session,
@@ -456,7 +456,7 @@ static void *bulk_multiple_channels_write_routine(void *arg)
             extra->channel_count = 0;
             return NULL;
         } else {
-            vlogD("Open channel [%d] succeeded (id:%d)", i, extra->channel_id[i]);
+            vlogD("<Cases> Open channel [%d] succeeded (id:%d)", i, extra->channel_id[i]);
             cond_wait(extra->channel_cond);
         }
     }
@@ -468,8 +468,8 @@ static void *bulk_multiple_channels_write_routine(void *arg)
     packet = (char *)alloca(pkt_sz);
     memset(packet, 'D', pkt_sz);
 
-    vlogD("Open new 128 channels successfully.");
-    vlogD("Begin to write data.....");
+    vlogD("<Cases> Open new 128 channels successfully.");
+    vlogD("<Cases> Begin to write data.....");
 
     gettimeofday(&start, NULL);
 
@@ -508,7 +508,7 @@ static void *bulk_multiple_channels_write_routine(void *arg)
     duration = (int)((end.tv_sec - start.tv_sec) * 1000000 +
                      (end.tv_usec - start.tv_usec)) / 1000 + 1;
 
-    vlogD("Finish! Total 128 channel write data bytes in %d.%d seconds.",
+    vlogD("<Cases> Finish! Total 128 channel write data bytes in %d.%d seconds.",
           (int)(duration / 1000), (int)(duration % 1000));
 
     for (i = 0; i < MAX_CHANNEL_COUNT; i++) {
@@ -535,7 +535,7 @@ static int do_bulk_multiple_channels_write(TestContext *context)
     int rc = pthread_create(&thread, NULL, bulk_multiple_channels_write_routine,
                             context);
     if (rc != 0) {
-        vlogE("create thread failed.");
+        vlogE("<Cases> create thread failed.");
         return -1;
     }
 
@@ -593,7 +593,7 @@ static int bulk_write_channel_internal(TestContext *context)
     TEST_ASSERT_TRUE(rc == 0);
 
     if (rc < 0)
-        vlogE("stream channel write failed.");
+        vlogE("<Cases> stream channel write failed.");
 
     rc = ela_stream_close_channel(context->session->session,
                                   context->stream->stream_id, extra->channel_id[0]);

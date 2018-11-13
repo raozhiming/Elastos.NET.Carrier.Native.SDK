@@ -63,7 +63,7 @@ static int connect_robot(const char *host, const char *port)
     assert(host && *host);
     assert(port && *port);
 
-    vlogI("Connecting to test robot(%s:%s).", host, port);
+    vlogI("<Cases> Connecting to test robot(%s:%s).", host, port);
 
     while(ntries < 3) {
         cmd_sock = socket_connect(host, port);
@@ -91,11 +91,11 @@ static int connect_robot(const char *host, const char *port)
     }
 
     if(cmd_sock == INVALID_SOCKET) {
-        vlogE("Connecting to test robot failed.");
+        vlogE("<Cases> Connecting to test robot failed.");
         return -1;
     }
 
-    vlogI("Connected to robot.");
+    vlogI("<Cases> Connected to robot.");
     return 0;
 }
 
@@ -104,7 +104,7 @@ static void disconnect_robot(void)
     if (cmd_sock != INVALID_SOCKET) {
         socket_close(cmd_sock);
         cmd_sock = INVALID_SOCKET;
-        vlogI("Disconnected robot.");
+        vlogI("<Cases> Disconnected robot.");
     }
 }
 
@@ -121,7 +121,7 @@ int write_cmd(const char *cmd, ...)
     va_end(ap);
 
     assert(cmd_line[strlen(cmd_line) - 1] == '\n');
-    vlogD("@@@@@@@@ Control command: %.*s", (int)(strlen(cmd_line)-1), cmd_line);
+    vlogI("<Cases> @@@@@@@@ Control command: %.*s", (int)(strlen(cmd_line)-1), cmd_line);
 
     return send(cmd_sock, cmd_line, (int)strlen(cmd_line), 0);
 }
@@ -136,7 +136,7 @@ int read_ack(const char *format, ...)
 
     assert(cmd_sock != INVALID_SOCKET);
     assert(format);
-
+    vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
     memset(ack_buffer, 0, sizeof(ack_buffer));
     while ((rc = recv(cmd_sock, &ch, 1, 0)) == 1) {
         // Match 0x0A or 0x0D0A
@@ -151,12 +151,12 @@ int read_ack(const char *format, ...)
     // ingore errors?!
     if (rc < 0) {
         if (errno == EAGAIN) {
-            vlogE("recv error. TIMEOUT.");
+            vlogE("<Cases> recv error. TIMEOUT.");
         }
         return -1;
     }
 
-    vlogD("@@@@@@@@ Got acknowledge: %s", ack_buffer);
+    vlogI("<Cases> @@@@@@@@ Got acknowledge: %s", ack_buffer);
 
     va_start(ap, format);
     rc = vsscanf(ack_buffer, format, ap);
@@ -237,20 +237,20 @@ int test_main(int argc, char *argv[])
 
     read_ack("%32s %45s %52s", ack, robotid, robotaddr);
     if (strcmp(ack, "ready") != 0) {
-        vlogE("Got wrong state from Test Robot: %s", ack);
+        vlogE("<Cases> Got wrong state from Test Robot: %s", ack);
         CU_cleanup_registry();
         disconnect_robot();
         return -1;
     }
 
-    vlogI("Got robot ID: %s", robotid);
-    vlogI("Got robot address: %s", robotaddr);
+    vlogI("<Cases> Got robot ID: %s", robotid);
+    vlogI("<Cases> Got robot address: %s", robotaddr);
 
     CU_basic_run_tests();
 
     fail_cnt = CU_get_number_of_tests_failed();
     if (fail_cnt > 0) {
-        vlogE("Failure Case: %d\n", fail_cnt);
+        vlogE("<Cases> Failure Case: %d\n", fail_cnt);
     }
 
     CU_cleanup_registry();

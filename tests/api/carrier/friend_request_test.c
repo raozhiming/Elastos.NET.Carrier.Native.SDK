@@ -72,13 +72,13 @@ static
 void friend_added_cb(ElaCarrier *w, const ElaFriendInfo *info, void *context)
 {
     wakeup(context);
-    vlogD("Friend %s added.", info->user_info.userid);
+    vlogI("<Cases> Friend %s added.", info->user_info.userid);
 }
 
 static void friend_removed_cb(ElaCarrier *w, const char *friendid, void *context)
 {
     wakeup(context);
-    vlogD("Friend %s removed.\n", friendid);
+    vlogI("<Cases> Friend %s removed.\n", friendid);
 }
 
 static void friend_connection_cb(ElaCarrier *w, const char *friendid,
@@ -91,7 +91,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
                          ONLINE : OFFLINE;
     cond_signal(wctxt->friend_status_cond);
 
-    vlogD("Robot connection status changed -> %s", connection_str(status));
+    vlogI("<Cases> Robot connection status changed -> %s", connection_str(status));
 }
 
 static

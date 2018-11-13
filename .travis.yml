@@ -2,131 +2,92 @@ language: c
 
 matrix:
   include:
-  - os: osx
-    env: BUILD_ENV=darwin_x64 BUILD_TYPE=Debug RUN_TEST=ON
-    if: NOT tag IS present
+  # - os: osx
+  #   env: BUILD_ENV=darwin_x64 BUILD_TYPE=Debug RUN_TEST=ON
+  #   if: NOT tag IS present
 
-  - os: osx
-    env: BUILD_ENV=darwin_x64 BUILD_TYPE=Release RUN_TEST=ON
+  # - os: osx
+  #   env: BUILD_ENV=darwin_x64 BUILD_TYPE=Release RUN_TEST=ON
 
-  - os: osx
-    env: BUILD_ENV=ios_arm64 PLATFORM=iphoneos BUILD_TYPE=Debug
-    if: NOT tag IS present
+  # - os: osx
+  #   env: BUILD_ENV=ios_arm64 PLATFORM=iphoneos BUILD_TYPE=Debug
+  #   if: NOT tag IS present
 
-  - os: osx
-    env: BUILD_ENV=ios_arm64 PLATFORM=iphoneos BUILD_TYPE=Release
-    if: tag IS present
+  # - os: osx
+  #   env: BUILD_ENV=ios_arm64 PLATFORM=iphoneos BUILD_TYPE=Release
+  #   if: tag IS present
 
-  - os: osx
-    env: BUILD_ENV=ios_x64 PLATFORM=iphonesimulator BUILD_TYPE=Debug
-    if: NOT tag IS present
+  # - os: osx
+  #   env: BUILD_ENV=ios_x64 PLATFORM=iphonesimulator BUILD_TYPE=Debug
+  #   if: NOT tag IS present
 
-  - os: osx
-    env: BUILD_ENV=ios_x64 PLATFORM=iphonesimulator BUILD_TYPE=Release
-    if: tag IS present
+  # - os: osx
+  #   env: BUILD_ENV=ios_x64 PLATFORM=iphonesimulator BUILD_TYPE=Release
+  #   if: tag IS present
 
-  - env: BUILD_ENV=linux_x64 BUILD_TYPE=Debug RUN_TEST=ON
-    sudo: true
-    if: NOT tag IS present
+  # - env: BUILD_ENV=linux_x64 BUILD_TYPE=Debug RUN_TEST=ON
+  #   sudo: true
+  #   if: NOT tag IS present
 
-  - env: BUILD_ENV=linux_x64 ENABLE_DOCS=ON BUILD_TYPE=Release RUN_TEST=ON
-    sudo: true
+  # - env: BUILD_ENV=linux_x64 ENABLE_DOCS=ON BUILD_TYPE=Release RUN_TEST=ON
+  #   sudo: true
 
-  - language: android
-    sudo: true
-    android:
-      components:
-        - tools
-        - platform-tools
-        - build-tools-23.0.2
-        - android-21
-    env: BUILD_ENV=android_armv7a ANDROID_ABI=armeabi-v7a BUILD_TYPE=Debug
-    if: NOT tag IS present
+  # - language: android
+  #   sudo: true
+  #   android:
+  #     components:
+  #       - tools
+  #       - platform-tools
+  #       - build-tools-23.0.2
+  #       - android-21
+  #   env: BUILD_ENV=android_armv7a ANDROID_ABI=armeabi-v7a BUILD_TYPE=Debug
+  #   if: NOT tag IS present
 
-  - language: android
-    sudo: true
-    android:
-      components:
-        - tools
-        - platform-tools
-        - build-tools-23.0.2
-        - android-21
-    env: BUILD_ENV=android_armv7a ANDROID_ABI=armeabi-v7a BUILD_TYPE=Release
-    if: tag IS present
+  # - language: android
+  #   sudo: true
+  #   android:
+  #     components:
+  #       - tools
+  #       - platform-tools
+  #       - build-tools-23.0.2
+  #       - android-21
+  #   env: BUILD_ENV=android_armv7a ANDROID_ABI=armeabi-v7a BUILD_TYPE=Release
+  #   if: tag IS present
 
-  - language: android
-    sudo: true
-    android:
-      components:
-        - tools
-        - platform-tools
-        - build-tools-23.0.2
-        - android-21
-    env: BUILD_ENV=android_arm64 ANDROID_ABI=arm64-v8a BUILD_TYPE=Debug
-    if: NOT tag IS present
+  # - language: android
+  #   sudo: true
 
-  - language: android
-    sudo: true
-    android:
-      components:
-        - tools
-        - platform-tools
-        - build-tools-23.0.2
-        - android-21
-    env: BUILD_ENV=android_arm64 ANDROID_ABI=arm64-v8a BUILD_TYPE=Release
-    if: tag IS present
+  # - env: BUILD_ENV=linux_x64 TEST02 BUILD_TYPE=Debug
+  #   sudo: true
 
-  - language: android
-    sudo: true
-    android:
-      components:
-        - tools
-        - platform-tools
-        - build-tools-23.0.2
-        - android-21
-    env: BUILD_ENV=android_x86 ANDROID_ABI=x86 BUILD_TYPE=Debug
-    if: NOT tag IS present
+  # - env: BUILD_ENV=linux_x64 TEST03 BUILD_TYPE=Debug
+  #   sudo: true
+  #   android:
+  #     components:
+  #       - tools
+  #       - platform-tools
+  #       - build-tools-23.0.2
+  #       - android-21
+  #   env: BUILD_ENV=android_x86_64 ANDROID_ABI=x86_64 BUILD_TYPE=Release
+  #   if: tag IS present
 
-  - language: android
-    sudo: true
-    android:
-      components:
-        - tools
-        - platform-tools
-        - build-tools-23.0.2
-        - android-21
-    env: BUILD_ENV=android_x86 ANDROID_ABI=x86 BUILD_TYPE=Release
-    if: tag IS present
+  # - sudo: true
+  #   env: BUILD_ENV=raspberrypi RASPBERRRIPI=TRUE BUILD_TYPE=Debug
+  #   if: NOT tag IS present
 
-  - language: android
-    sudo: true
-    android:
-      components:
-        - tools
-        - platform-tools
-        - build-tools-23.0.2
-        - android-21
-    env: BUILD_ENV=android_x86_64 ANDROID_ABI=x86_64 BUILD_TYPE=Debug
-    if: NOT tag IS present
+  # - sudo: true
+  #   env: BUILD_ENV=raspberrypi RASPBERRRIPI=TRUE BUILD_TYPE=Release
+  #   if: tag IS present
 
-  - language: android
-    sudo: true
-    android:
-      components:
-        - tools
-        - platform-tools
-        - build-tools-23.0.2
-        - android-21
-    env: BUILD_ENV=android_x86_64 ANDROID_ABI=x86_64 BUILD_TYPE=Release
-    if: tag IS present
+  - env: BUILD_ENV=linux_x64 001 BUILD_TYPE=Debug RUN_TEST=ON
 
-  - sudo: true
-    env: BUILD_ENV=raspberrypi RASPBERRRIPI=TRUE BUILD_TYPE=Debug
-    if: NOT tag IS present
+  - env: BUILD_ENV=linux_x64 002 BUILD_TYPE=Debug RUN_TEST=ON
 
-  - sudo: true
-    env: BUILD_ENV=raspberrypi RASPBERRRIPI=TRUE BUILD_TYPE=Release
-    if: tag IS present
+  - env: BUILD_ENV=linux_x64 003 BUILD_TYPE=Debug RUN_TEST=ON
+
+  - env: BUILD_ENV=linux_x64 004 BUILD_TYPE=Debug RUN_TEST=ON
+
+  - env: BUILD_ENV=linux_x64 005 BUILD_TYPE=Debug RUN_TEST=ON
 
 install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then

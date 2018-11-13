@@ -74,15 +74,15 @@ void carrier_connection_status_cb(ElaCarrier *w, ElaConnectionStatus status,
 
     switch (status) {
         case ElaConnectionStatus_Connected:
-            vlogI("Connected to Carrier network.");
+            vlogI("<Cases> Connected to Carrier network.");
             break;
 
         case ElaConnectionStatus_Disconnected:
-            vlogI("Disconnect from Carrier network.");
+            vlogI("<Cases> Disconnect from Carrier network.");
             break;
 
         default:
-            vlogE("Error!!! Got unknown connection status %d.", status);
+            vlogE("<Cases> Error!!! Got unknown connection status %d.", status);
     }
 
     if (cbs && cbs->connection_status)
@@ -93,7 +93,7 @@ static void carrier_ready_cb(ElaCarrier *w, void *context)
 {
     ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
 
-    vlogI("Carrier is ready.");
+    vlogI("<Cases> Carrier is ready.");
 
     if (cbs && cbs->ready)
         cbs->ready(w, context);
@@ -135,6 +135,8 @@ static void carrier_friend_connection_cb(ElaCarrier *w, const char *friendid,
 
     if (cbs && cbs->friend_connection)
         cbs->friend_connection(w, friendid, status, context);
+
+    vlogI("<Cases> Robot connection status changed -> %s", connection_str(status));
 }
 
 static void carrier_friend_presence_cb(ElaCarrier *w, const char *friendid,
@@ -154,10 +156,13 @@ static void carrier_friend_request_cb(ElaCarrier *w, const char *userid,
     CarrierContext *wctx = (CarrierContext*)context;
     int rc;
 
+    vlogI("<Cases> Received friend request from user %s", userid);
+    vlogI("<Cases>   hello: %s", hello);
+
     if (!strcmp(hello, "auto-reply")) {
         rc = ela_accept_friend(w, userid);
         if (rc < 0) {
-            vlogE("Accept friend request from %s error (0x%x)",
+            vlogE("<Cases> Accept friend request from %s error (0x%x)",
                   userid, ela_get_error());
             wctx->friend_status = FAILED;
             cond_signal(wctx->friend_status_cond);
@@ -173,7 +178,7 @@ static void carrier_friend_added_cb(ElaCarrier *w, const ElaFriendInfo *info,
                                     void *context)
 {
     ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
-
+    vlogI("<Cases> New friend %s added", info->user_info.userid);
     if (cbs && cbs->friend_added)
         cbs->friend_added(w, info, context);
 }
@@ -182,7 +187,7 @@ static void carrier_friend_removed_cb(ElaCarrier *w, const char *friendid,
                                       void *context)
 {
     ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
-
+    vlogI("<Cases> Friend %s is removed", friendid);
     if (cbs && cbs->friend_removed)
         cbs->friend_removed(w, friendid, context);
 }
@@ -202,7 +207,7 @@ static void carrier_friend_invite_cb(ElaCarrier *w, const char *from,
                                      void *context)
 {
     ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
-
+    vlogI("<Cases> Recevied friend invite from %s", from);
     if (cbs && cbs->friend_invite)
         cbs->friend_invite(w, from, bundle, data, len, context);
 }
@@ -252,7 +257,7 @@ int test_suite_init_ext(TestContext *context, bool udp_disabled)
 
     opts.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode) * opts.bootstraps_size);
     if (!opts.bootstraps) {
-        vlogE("Error: out of memory.");
+        vlogE("<Cases> Error: out of memory.");
         return -1;
     }
 
@@ -270,7 +275,7 @@ int test_suite_init_ext(TestContext *context, bool udp_disabled)
     free(opts.bootstraps);
 
     if (!wctxt->carrier) {
-        vlogE("Error: Carrier new error (0x%x)", ela_get_error());
+        vlogE("<Cases> Error: Carrier new error (0x%x)", ela_get_error());
         return -1;
     }
 
@@ -304,14 +309,14 @@ int add_friend_anyway(TestContext *context, const char *userid,
 {
     CarrierContext *wctxt = context->carrier;
     int rc;
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
     if (!ela_is_friend(wctxt->carrier, userid)) {
         rc = ela_add_friend(wctxt->carrier, address, "auto-reply");
         if (rc < 0) {
-            vlogE("Error: attempt to add friend error.");
+            vlogE("<Cases> Error: attempt to add friend error.");
             return rc;
         }
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
         // wait for friend_added callback invoked.
         cond_wait(wctxt->cond);
     } else {
@@ -325,7 +330,7 @@ int add_friend_anyway(TestContext *context, const char *userid,
         rc = write_cmd("fadd %s %s %s\n", userid, useraddr, hello);
         CU_ASSERT_FATAL(rc > 0);
     }
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
     // wait until robot being notified us connected.
     char buf[2][32];
     rc = read_ack("%32s %32s", buf[0], buf[1]);
@@ -334,11 +339,11 @@ int add_friend_anyway(TestContext *context, const char *userid,
     CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "succeeded");
 
     // wait for friend_connection (online) callback invoked.
-    while (wctxt->friend_status != ONLINE) {
+    while (wctxt->friend_status != ONLINE) {vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
         CU_ASSERT_FATAL(wctxt->friend_status != FAILED);
         cond_wait(wctxt->friend_status_cond);
     }
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
     return 0;
 }
 
@@ -347,20 +352,20 @@ int remove_friend_anyway(TestContext *context, const char *userid)
     CarrierContext *wctxt = context->carrier;
     int rc;
     char me[ELA_MAX_ID_LEN + 1];
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
     if (ela_is_friend(wctxt->carrier, userid)) {
         rc = ela_remove_friend(wctxt->carrier, userid);
         if (rc < 0) {
-            vlogE("Error: remove friend error (%x)", ela_get_error());
+            vlogE("<Cases> Error: remove friend error (%x)", ela_get_error());
             return rc;
         }
 
         // wait until robot offline.
-        while (wctxt->friend_status != OFFLINE) {
+        while (wctxt->friend_status != OFFLINE) {vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
             CU_ASSERT_FATAL(wctxt->friend_status != FAILED);
             cond_wait(wctxt->friend_status_cond);
         }
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
         // wait for friend_removed callback invoked.
         cond_wait(wctxt->cond);
     }
@@ -368,14 +373,14 @@ int remove_friend_anyway(TestContext *context, const char *userid)
 
     (void)ela_get_userid(wctxt->carrier, me, sizeof(me));
     write_cmd("fremove %s\n", me);
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
     // wait for completion of robot "fremove" command.
     char buf[2][32];
     rc = read_ack("%32s %32s", buf[0], buf[1]);
     CU_ASSERT_EQUAL_FATAL(rc, 2);
     CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "fremove");
     CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "succeeded");
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
     return 0;
 }
 
@@ -415,9 +420,10 @@ void test_stream_scheme(ElaStreamType stream_type, int stream_options,
     int rc;
     char cmd[32];
     char result[32];
+    bool is_wakeup;
 
     context->context_reset(context);
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
     rc = add_friend_anyway(context, robotid, robotaddr);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
@@ -427,12 +433,12 @@ void test_stream_scheme(ElaStreamType stream_type, int stream_options,
 
     rc = robot_sinit();
     TEST_ASSERT_TRUE(rc > 0);
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
     rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "sinit") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
     sctxt->session = ela_session_new(wctxt->carrier, robotid);
     TEST_ASSERT_TRUE(sctxt->session != NULL);
 
@@ -441,42 +447,46 @@ void test_stream_scheme(ElaStreamType stream_type, int stream_options,
                                         stream_ctxt->cbs, stream_ctxt);
     TEST_ASSERT_TRUE(stream_ctxt->stream_id > 0);
 
-    cond_wait(stream_ctxt->cond);
+    is_wakeup = cond_trywait(stream_ctxt->cond, 60000);
+    CU_ASSERT_TRUE_FATAL(is_wakeup);
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_initialized);
     TEST_ASSERT_TRUE(stream_ctxt->state_bits & (1 << ElaStreamState_initialized));
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
     rc = ela_session_request(sctxt->session, NULL, sctxt->request_complete_cb, sctxt);
     TEST_ASSERT_TRUE(rc == 0);
 
-    cond_wait(stream_ctxt->cond);
+    is_wakeup = cond_trywait(stream_ctxt->cond, 60000);
+    CU_ASSERT_TRUE_FATAL(is_wakeup);
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_transport_ready);
     TEST_ASSERT_TRUE(stream_ctxt->state_bits & (1 << ElaStreamState_transport_ready));
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
     rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "srequest") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "received") == 0);
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
     rc = write_cmd("sreply confirm %d %d\n", stream_type, stream_options);
     TEST_ASSERT_TRUE(rc > 0);
 
-    cond_wait(sctxt->request_complete_cond);
+    is_wakeup = cond_trywait(sctxt->request_complete_cond, 60000);
+    CU_ASSERT_TRUE_FATAL(is_wakeup);
     TEST_ASSERT_TRUE(sctxt->request_received == 0);
     TEST_ASSERT_TRUE(sctxt->request_complete_status == 0);
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
     rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "sreply") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
-
-    cond_wait(stream_ctxt->cond);
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
+    is_wakeup = cond_trywait(stream_ctxt->cond, 60000);
+    CU_ASSERT_TRUE_FATAL(is_wakeup);
 
     if (stream_ctxt->state != ElaStreamState_connecting &&
-        stream_ctxt->state != ElaStreamState_connected) {
+        stream_ctxt->state != ElaStreamState_connected) {vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
         // if error, consume ctrl acknowlege from robot.
         read_ack("%32s %32s", cmd, result);
     }
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
     // Stream 'connecting' state is a transient state.
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_connecting ||
                      stream_ctxt->state == ElaStreamState_connected);
@@ -486,22 +496,24 @@ void test_stream_scheme(ElaStreamType stream_type, int stream_options,
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "sconnect") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
-
-    cond_wait(stream_ctxt->cond);
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
+    is_wakeup = cond_trywait(stream_ctxt->cond, 60000);
+    CU_ASSERT_TRUE_FATAL(is_wakeup);
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_connected);
     TEST_ASSERT_TRUE(stream_ctxt->state_bits & (1 << ElaStreamState_connected));
 
     rc = do_work_cb ? do_work_cb(context) : 0;
     TEST_ASSERT_TRUE(rc == 0);
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
     rc = ela_session_remove_stream(sctxt->session, stream_ctxt->stream_id);
     TEST_ASSERT_TRUE(rc == 0);
     stream_ctxt->stream_id = -1;
-
-    cond_wait(stream_ctxt->cond);
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
+    is_wakeup = cond_trywait(stream_ctxt->cond, 60000);
+    CU_ASSERT_TRUE_FATAL(is_wakeup);
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_closed);
     TEST_ASSERT_TRUE(stream_ctxt->state_bits & (1 << ElaStreamState_closed));
-
+vlogI("<Cases> func:%s, Line:%d", __FUNCTION__, __LINE__);
 cleanup:
     if (stream_ctxt->stream_id > 0) {
         ela_session_remove_stream(sctxt->session, stream_ctxt->stream_id);
