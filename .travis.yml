@@ -191,8 +191,8 @@ script:
         cmake -DIOS_PLATFORM=$PLATFORM -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=BUILD_VER -DCMAKE_TOOLCHAIN_FILE=../../cmake/iOSToolchain.cmake ../.. ;
       fi
     fi
-  - cd dist
-  - export
+  # - cd dist
+  # - export
   # - make && make install && make dist
   # - cd dist && tar -czf $TRAVIS_TAG-$BUILD_ENV-$(date +'%Y%m%d').tar.gz include lib/*.$OUTPUT_TYPE
   # - tar -czf docs.tar.gz  -C share/elastos/carrier html
