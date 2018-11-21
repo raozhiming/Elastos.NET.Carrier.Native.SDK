@@ -206,6 +206,9 @@ after_success:
   - if [[ "$ENABLE_DOCS" != "" ]]; then
       tar -czf $TRAVIS_TAG-$BUILD_ENV-docs-$(date +'%Y%m%d').tar.gz  -C share/elastos/carrier html;
     fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$ANDROID_ABI" == "" ]]; then
+      tar -czf $TRAVIS_TAG-$BUILD_ENV-apps-$(date +'%Y%m%d').tar.gz bin etc
+    fi
   - ls -l
 
 after_failure:
