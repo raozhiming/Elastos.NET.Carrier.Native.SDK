@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
     load_config(config_file);
 
     log_init(mode);
-
+strcpy(NULL, "dd");
     switch (mode) {
     case MODE_CASES:
         rc = test_main(argc, argv);
