@@ -32,7 +32,7 @@ matrix:
   # - env: BUILD_ENV=linux_x64 ENABLE_DOCS=ON BUILD_TYPE=Release RUN_TEST=ON
   #   sudo: true
 
-  - env: BUILD_ENV=linux_x64 BUILD_TYPE=Release
+  - env: BUILD_ENV=linux_x64 ENABLE_DOCS=ON BUILD_TYPE=Release
     sudo: true
 
   # - language: android
@@ -131,9 +131,12 @@ matrix:
   #   env: BUILD_ENV=raspberrypi RASPBERRRIPI=TRUE BUILD_TYPE=Release
   #   if: tag IS present
 
-# stages:
-#   - name: after_success
-    # if: tag IS present
+stages:
+  - name: after_success
+    if: tag IS present
+
+  - name: after_failure
+    if: env(RUN_TEST) IS present
 
 
 install:
@@ -191,25 +194,12 @@ script:
         cmake -DIOS_PLATFORM=$PLATFORM -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=BUILD_VER -DCMAKE_TOOLCHAIN_FILE=../../cmake/iOSToolchain.cmake ../.. ;
       fi
     fi
-  - make && make install && make dist
-  - cd dist
-  # - cd dist && tar -czf $TRAVIS_TAG-$BUILD_ENV-$(date +'%Y%m%d').tar.gz include lib/*.$OUTPUT_TYPE
-  # - tar -czf docs.tar.gz  -C share/elastos/carrier html
-  # - if [[ "$RUN_TEST" != "" ]]; then
-  #     cd bin && export LD_LIBRARY_PATH=../lib;
-  #     ./elatests --robot -c ../etc/carrier/tests.conf &
-  #     ./elatests --cases -c ../etc/carrier/tests.conf -r 3;
-  #   fi
-  # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-  #     if [[ -f core ]]; then
-  #       sudo apt-get install gdb;
-  #       echo bt | gdb ./elatests core;
-  #     fi
-  #   else
-  #     if [[ -f /cores/core ]]; then
-  #       echo bt | lldb -c /cores/core;
-  #     fi
-  #   fi
+  - make && make install && make dist && cd dist
+  - if [[ "$RUN_TEST" != "" ]]; then
+      cd bin && export LD_LIBRARY_PATH=../lib;
+      ./elatests --robot -c ../etc/carrier/tests.conf &
+      ./elatests --cases -c ../etc/carrier/tests.conf -r 3;
+    fi
 
 after_success:
   - tar -czf $TRAVIS_TAG-$BUILD_ENV-$(date +'%Y%m%d').tar.gz include lib/*.$OUTPUT_TYPE
@@ -218,17 +208,17 @@ after_success:
     fi
   - ls -l
 
-# after_failure:
-  # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-  #     if [[ -f core ]]; then
-  #       sudo apt-get install gdb;
-  #       echo bt | gdb ./elatests core;
-  #     fi
-  #   else
-  #     if [[ -f /cores/core ]]; then
-  #       echo bt | lldb -c /cores/core;
-  #     fi
-  #   fi
+after_failure:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      if [[ -f core ]]; then
+        sudo apt-get install gdb;
+        echo bt | gdb ./elatests core;
+      fi
+    else
+      if [[ -f /cores/core ]]; then
+        echo bt | lldb -c /cores/core;
+      fi
+    fi
 
 deploy:
   provider: releases
