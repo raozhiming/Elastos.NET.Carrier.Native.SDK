@@ -29,7 +29,7 @@ matrix:
   #   sudo: true
   #   if: NOT tag IS present
 
-  # - env: BUILD_ENV=linux_x64 BUILD_TYPE=Release RUN_TEST=ON
+  # - env: BUILD_ENV=linux_x64 ENABLE_DOCS=ON BUILD_TYPE=Release RUN_TEST=ON
   #   sudo: true
 
   - env: BUILD_ENV=linux_x64 BUILD_TYPE=Release
@@ -136,39 +136,39 @@ matrix:
     # if: tag IS present
 
 
-# install:
-#   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-#       if [[ "$ENABLE_DOCS" != "" ]]; then
-#         sudo apt-get update;
-#         sudo apt-get install python3.4;
-#         sudo ln -s -f /usr/bin/python3.4 /usr/bin/python;
-#         sudo apt-get install doxygen  graphviz;
-#         curl -L -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py;
-#         sudo python /tmp/get-pip.py;
-#         sudo pip install breathe;
-#         sudo pip install -U sphinx;
-#       fi
+install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      if [[ "$ENABLE_DOCS" != "" ]]; then
+        sudo apt-get update;
+        sudo apt-get install python3.4;
+        sudo ln -s -f /usr/bin/python3.4 /usr/bin/python;
+        sudo apt-get install doxygen  graphviz;
+        curl -L -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py;
+        sudo python /tmp/get-pip.py;
+        sudo pip install breathe;
+        sudo pip install -U sphinx;
+      fi
 
-#       if [[ "$ANDROID_ABI" == "" ]]; then
-#         if [[ "$RASPBERRRIPI" != "" ]]; then
-#           cd /tmp && git clone https://github.com/raspberrypi/tools.git raspberrypitools;
-#           export RPI_TOOLCHAIN_HOME=/tmp/raspberrypitools;
-#           cd /tmp && wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz;
-#           tar -xzvf cmake-3.11.4-Linux-x86_64.tar.gz;
-#           export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH;
-#         fi
-#       else
-#         echo y | sdkmanager 'ndk-bundle';
-#         export ANDROID_NDK_HOME=/usr/local/android-sdk/ndk-bundle;
-#         cd /tmp && wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz;
-#         tar -xzvf cmake-3.11.4-Linux-x86_64.tar.gz;
-#         export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH;
-#       fi
-#     else
-#       ulimit -c unlimited;
-#       sudo sysctl kern.corefile=/cores/core;
-#       easy_install six;
-#     fi
+      if [[ "$ANDROID_ABI" == "" ]]; then
+        if [[ "$RASPBERRRIPI" != "" ]]; then
+          cd /tmp && git clone https://github.com/raspberrypi/tools.git raspberrypitools;
+          export RPI_TOOLCHAIN_HOME=/tmp/raspberrypitools;
+          cd /tmp && wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz;
+          tar -xzvf cmake-3.11.4-Linux-x86_64.tar.gz;
+          export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH;
+        fi
+      else
+        echo y | sdkmanager 'ndk-bundle';
+        export ANDROID_NDK_HOME=/usr/local/android-sdk/ndk-bundle;
+        cd /tmp && wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz;
+        tar -xzvf cmake-3.11.4-Linux-x86_64.tar.gz;
+        export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH;
+      fi
+    else
+      ulimit -c unlimited;
+      sudo sysctl kern.corefile=/cores/core;
+      easy_install six;
+    fi
 
 script:
   - cd $TRAVIS_BUILD_DIR/build && mkdir ${BUILD_ENV}_$BUILD_TYPE && cd ${BUILD_ENV}_$BUILD_TYPE
@@ -191,9 +191,7 @@ script:
         cmake -DIOS_PLATFORM=$PLATFORM -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=BUILD_VER -DCMAKE_TOOLCHAIN_FILE=../../cmake/iOSToolchain.cmake ../.. ;
       fi
     fi
-  # - cd dist
-  # - export
-  # - make && make install && make dist
+  - make && make install && make dist
   # - cd dist && tar -czf $TRAVIS_TAG-$BUILD_ENV-$(date +'%Y%m%d').tar.gz include lib/*.$OUTPUT_TYPE
   # - tar -czf docs.tar.gz  -C share/elastos/carrier html
   # - if [[ "$RUN_TEST" != "" ]]; then
@@ -213,8 +211,11 @@ script:
   #   fi
 
 after_success:
-  - pwd
-  - export
+  - tar -czf $TRAVIS_TAG-$BUILD_ENV-$(date +'%Y%m%d').tar.gz include lib/*.$OUTPUT_TYPE
+  - if [[ "$ENABLE_DOCS" != "" ]]; then
+      tar -czf $TRAVIS_TAG-$BUILD_ENV-docs-$(date +'%Y%m%d').tar.gz  -C share/elastos/carrier html;
+    fi
+  - ls -l
 
 deploy:
   provider: releases
