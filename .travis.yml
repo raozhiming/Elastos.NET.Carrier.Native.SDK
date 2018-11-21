@@ -32,7 +32,7 @@ matrix:
   # - env: BUILD_ENV=linux_x64 ENABLE_DOCS=ON BUILD_TYPE=Release RUN_TEST=ON
   #   sudo: true
 
-  - env: BUILD_ENV=linux_x64 ENABLE_DOCS=ON BUILD_TYPE=Release RUN_TEST=ON
+  - env: BUILD_ENV=linux_x64 ENABLE_DOCS=ON BUILD_TYPE=Release
     sudo: true
 
   # - language: android
@@ -131,14 +131,6 @@ matrix:
   #   env: BUILD_ENV=raspberrypi RASPBERRRIPI=TRUE BUILD_TYPE=Release
   #   if: tag IS present
 
-stages:
-  - name: after_success
-    if: tag IS present
-
-  - name: after_failure
-    if: env(RUN_TEST) IS present
-
-
 install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       if [[ "$ENABLE_DOCS" != "" ]]; then
@@ -202,14 +194,17 @@ script:
     fi
 
 after_success:
-  - tar -czf $TRAVIS_TAG-$BUILD_ENV-$(date +'%Y%m%d').tar.gz include lib/*.$OUTPUT_TYPE
-  - if [[ "$ENABLE_DOCS" != "" ]]; then
-      tar -czf $TRAVIS_TAG-$BUILD_ENV-docs-$(date +'%Y%m%d').tar.gz  -C share/elastos/carrier html;
+  - if [[ "$TRAVIS_TAG" != "" ]]; then
+      cd $TRAVIS_BUILD_DIR/build/${BUILD_ENV}_$BUILD_TYPE/dist;
+      tar -czf $TRAVIS_TAG-$BUILD_ENV-$(date +'%Y%m%d').tar.gz include lib/*.$OUTPUT_TYPE;
+      if [[ "$ENABLE_DOCS" != "" ]]; then
+        tar -czf $TRAVIS_TAG-$BUILD_ENV-docs-$(date +'%Y%m%d').tar.gz  -C share/elastos/carrier html;
+      fi
+      if [[ "$TRAVIS_OS_NAME" == "linux" && "$ANDROID_ABI" == "" ]]; then
+        tar -czf $TRAVIS_TAG-$BUILD_ENV-apps-$(date +'%Y%m%d').tar.gz bin etc;
+      fi
+      ls -l;
     fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$ANDROID_ABI" == "" ]]; then
-      tar -czf $TRAVIS_TAG-$BUILD_ENV-apps-$(date +'%Y%m%d').tar.gz bin etc;
-    fi
-  - ls -l
 
 after_failure:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
