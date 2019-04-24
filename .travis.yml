@@ -85,8 +85,9 @@ install:
   - curl -L -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
   - python --version
   - sudo python /tmp/get-pip.py
-  - sudo pip install breathe
-  - sudo pip install -U -q sphinx==1.8
+  - sudo pip3 install -U -q sphinx==1.8.0
+  - sudo pip3 install breathe
+
   # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
   #     if [[ "$ENABLE_DOCS" != "" ]]; then
   #       sudo apt-get update;
