@@ -78,6 +78,7 @@ install:
   - sudo apt-get update
   - sudo apt-get install doxygen  graphviz
   - curl -L -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
+  - python --version
   - sudo python /tmp/get-pip.py
   - sudo pip install breathe
   - sudo pip install -U sphinx
