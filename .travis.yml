@@ -73,7 +73,7 @@ matrix:
   #   env: BUILD_ENV=raspberrypi RASPBERRRIPI=TRUE BUILD_TYPE=Debug
 
 install:
-  - cd /tmp
+  # - cd /tmp
   - whereis python
   - sudo apt-get update
   - sudo apt-get install doxygen  graphviz
