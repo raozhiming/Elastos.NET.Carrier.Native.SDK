@@ -74,42 +74,48 @@ matrix:
 
 install:
   - cd /tmp
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      if [[ "$ENABLE_DOCS" != "" ]]; then
-        sudo apt-get update;
-        sudo apt-get install doxygen  graphviz;
-        curl -L -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py;
-        sudo python /tmp/get-pip.py;
-        sudo pip install breathe;
-        sudo pip install -U sphinx;
-      fi
+  - sudo apt-get update
+  - sudo apt-get install doxygen  graphviz
+  - curl -L -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
+  - sudo python /tmp/get-pip.py
+  - sudo pip install breathe
+  - sudo pip install -U sphinx
+  # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+  #     if [[ "$ENABLE_DOCS" != "" ]]; then
+  #       sudo apt-get update;
+  #       sudo apt-get install doxygen  graphviz;
+  #       curl -L -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py;
+  #       sudo python /tmp/get-pip.py;
+  #       sudo pip install breathe;
+  #       sudo pip install -U sphinx;
+  #     fi
 
-      if [[ "$ANDROID_ABI" == "" ]]; then
-        if [[ "$RASPBERRRIPI" != "" ]]; then
-          git clone https://github.com/raspberrypi/tools.git raspberrypitools;
-          export RPI_TOOLCHAIN_HOME=/tmp/raspberrypitools;
-          wget -q https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz;
-          tar -xzf cmake-3.11.4-Linux-x86_64.tar.gz;
-          export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH;
-        fi
-      else
-        wget -q https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz;
-        tar -xzf cmake-3.11.4-Linux-x86_64.tar.gz;
-        export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH;
-        wget -q https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip;
-        unzip -q android-ndk-r16b-linux-x86_64.zip;
-        export ANDROID_NDK_HOME=/tmp/android-ndk-r16b;
-      fi
-    else
-      ulimit -c unlimited;
-      sudo sysctl kern.corefile=/cores/core;
-      easy_install six;
-      if [[ "$ANDROID_ABI" != "" ]]; then
-        wget -q https://dl.google.com/android/repository/android-ndk-r16b-darwin-x86_64.zip;
-        unzip -q android-ndk-r16b-darwin-x86_64.zip;
-        export ANDROID_NDK_HOME=/tmp/android-ndk-r16b;
-      fi
-    fi
+  #     if [[ "$ANDROID_ABI" == "" ]]; then
+  #       if [[ "$RASPBERRRIPI" != "" ]]; then
+  #         git clone https://github.com/raspberrypi/tools.git raspberrypitools;
+  #         export RPI_TOOLCHAIN_HOME=/tmp/raspberrypitools;
+  #         wget -q https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz;
+  #         tar -xzf cmake-3.11.4-Linux-x86_64.tar.gz;
+  #         export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH;
+  #       fi
+  #     else
+  #       wget -q https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz;
+  #       tar -xzf cmake-3.11.4-Linux-x86_64.tar.gz;
+  #       export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH;
+  #       wget -q https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip;
+  #       unzip -q android-ndk-r16b-linux-x86_64.zip;
+  #       export ANDROID_NDK_HOME=/tmp/android-ndk-r16b;
+  #     fi
+  #   else
+  #     ulimit -c unlimited;
+  #     sudo sysctl kern.corefile=/cores/core;
+  #     easy_install six;
+  #     if [[ "$ANDROID_ABI" != "" ]]; then
+  #       wget -q https://dl.google.com/android/repository/android-ndk-r16b-darwin-x86_64.zip;
+  #       unzip -q android-ndk-r16b-darwin-x86_64.zip;
+  #       export ANDROID_NDK_HOME=/tmp/android-ndk-r16b;
+  #     fi
+  #   fi
 
 script:
   - cd $TRAVIS_BUILD_DIR/build && mkdir ${BUILD_ENV}_$BUILD_TYPE && cd ${BUILD_ENV}_$BUILD_TYPE
