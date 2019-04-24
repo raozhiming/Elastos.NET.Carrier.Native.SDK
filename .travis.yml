@@ -86,7 +86,7 @@ install:
   - python --version
   - sudo python /tmp/get-pip.py
   - sudo pip install breathe
-  - sudo pip install -U sphinx
+  - sudo pip install -U -q sphinx==1.8
   # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
   #     if [[ "$ENABLE_DOCS" != "" ]]; then
   #       sudo apt-get update;
