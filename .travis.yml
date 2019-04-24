@@ -31,6 +31,8 @@ matrix:
   - language: python
     python:
       - "3.6"
+    virtualenv:
+      system_site_packages: true
     env: BUILD_ENV=linux_x64 ENABLE_DOCS=ON BUILD_TYPE=Release RUN_TEST=ON
     sudo: true
 
