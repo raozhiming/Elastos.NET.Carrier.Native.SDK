@@ -26,12 +26,7 @@ matrix:
   # - env: BUILD_ENV=linux_x64 BUILD_TYPE=Debug RUN_TEST=ON
   #   sudo: true
 
-  - language: python
-    python:
-      - "3.6"
- #   virtualenv:
- #     system_site_packages: true
-    env: BUILD_ENV=linux_x64 ENABLE_DOCS=ON BUILD_TYPE=Release RUN_TEST=ON
+  - env: BUILD_ENV=linux_x64 ENABLE_DOCS=ON BUILD_TYPE=Release RUN_TEST=ON
     sudo: true
 
   # - language: android
@@ -80,8 +75,9 @@ matrix:
 install:
   # - cd /tmp
   - whereis python
-  #- sudo apt-get update
-  #- sudo apt-get install doxygen  graphviz
+  - sudo apt-get update
+  - sudo apt-get install python3.5
+  - sudo apt-get install doxygen  graphviz
   - curl -L -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
   - python --version
   - sudo python /tmp/get-pip.py
